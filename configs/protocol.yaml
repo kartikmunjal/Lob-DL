@@ -1,0 +1,119 @@
+project:
+  owner: Kartik Munjal
+  purpose: portfolio_research_no_alpha_claim
+  preregistration_date: 2026-10-13
+
+data:
+  fi2010:
+    representation: NoAuction_DecPre
+    input_features: 40
+    window_length: 100
+    primary_horizons_events: [10, 20, 50, 100]
+    available_horizons_events: [10, 20, 30, 50, 100]
+    primary_labels: shipped_single_future_midprice
+    threshold_alpha: 0.002
+    label_encoding: {up: 1, stationary: 2, down: 3}
+    smoothed_forward_mean_label_ablation: true
+    segment_keys: [stock, day]
+  lobster:
+    primary_threshold_alpha: 0.002
+    report_fixed_alpha_class_collapse: true
+    distribution_matched_alpha:
+      calibration_split: target_day_prefix_20_percent
+      target: fi2010_training_class_proportions_by_horizon
+      objective: minimize_total_variation_distance
+      selection: deterministic_grid_search
+      grid_min: 0.0
+      grid_max: 0.01
+      grid_points: 10001
+
+splits:
+  train_days: [1, 2, 3, 4, 5, 6]
+  validation_days: [7]
+  test_days: [8, 9, 10]
+  purge_events: 200
+  no_refit_primary: true
+  amendment_refit_days: [1, 2, 3, 4, 5, 6, 7]
+
+selection:
+  metric: macro_f1
+  trials_per_model: 12
+  max_epochs: 40
+  early_stopping_patience: 5
+
+randomness:
+  seeds: [11, 23, 47, 91, 137]
+  deterministic_models: [B0, B1]
+
+evaluation:
+  metrics: [per_class_precision, per_class_recall, per_class_f1, macro_f1, mcc, ece]
+  confidence_level: 0.95
+  bootstrap:
+    type: moving_block
+    block_length: 100
+    replicates: 2000
+    unit: contiguous_test_windows_within_stock_day
+    pool_seeds: true
+  report_seed_sd_separately: true
+  paired_tests: same_blocks_per_window_metric_difference
+  n_trials_definition: preregistered_hyperparameter_trials_plus_reported_variants
+
+models:
+  common:
+    loss: unweighted_cross_entropy
+    execution: signal_through_t_prediction_at_t_no_trading_backtest
+  B0: {kind: majority_and_persistence}
+  B1:
+    kind: multinomial_logistic_regression
+    penalty: l2
+    normalization: train_only_standardization
+  B2:
+    kind: lightgbm
+    leaves_search: [31, 63]
+    learning_rate: 0.05
+    min_data_in_leaf: 200
+    early_stopping: true
+  M1:
+    kind: deeplob
+    input_shape: [100, 40]
+    lstm_hidden: 64
+    paper_optimizer: {name: Adam, learning_rate: 0.01, epsilon: 1.0}
+    official_code_optimizer: {name: Adam, learning_rate: 0.0001}
+    primary_batch_size: 64
+    protocol_difference_batch_size: {pytorch: 64, tensorflow: 128}
+  M2:
+    kind: transformer_encoder
+    d_model: 64
+    heads: 4
+    layers: 3
+    ffn_dim: 128
+    dropout: 0.1
+    positional_embedding: learned
+    pooling: last_token
+    optimizer: {name: AdamW, learning_rate: 0.001, weight_decay: 0.01}
+    warmup_fraction: 0.05
+    schedule: cosine
+    gradient_clip: 1.0
+
+features:
+  primary:
+    relative_spread: true
+    price_distance_levels: [5, 10]
+    volume_imbalance_levels: [1, 3, 5, 10]
+    log_depth_levels: [5, 10]
+    microprice_minus_mid: true
+    book_slope: true
+    mid_log_return_lags: [1, 2, 5, 10, 20]
+    realized_volatility_windows: [10, 50]
+    imbalance_delta_lags: [1, 5]
+    spread_delta_lags: [1, 5]
+    top_level_ofi_windows: [1, 5, 10]
+  shipped_144_features_ablation: true
+
+compute:
+  host: norgate
+  gpu: NVIDIA_GeForce_RTX_3070_8GB
+  mixed_precision: true
+  total_gpu_hour_cap: 60
+  overrun_amendment: limit_M2_to_horizons_10_and_100
+
