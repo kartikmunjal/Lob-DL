@@ -26,6 +26,17 @@ data:
       grid_min: 0.0
       grid_max: 0.01
       grid_points: 10001
+    replay_amendment_2026_10_14:
+      initialization: first_vendor_snapshot_after_message_1_once
+      replay_message_range: message_2_through_end
+      reseeding_primary: prohibited
+      unattributed_event_rule: apply_at_price_level_clamp_zero_log_absent_and_skip
+      hidden_execution_changes_book: false
+      comparison_after_each_replayed_message: true
+      mismatch_time_bin_minutes: 30
+      primary_t1_input: vendor_book
+      reconstructed_sensitivity_window: exact_all_top10_cells_entire_100_event_window
+      posthoc_match_cutoff: prohibited_report_full_table
 
 splits:
   train_days: [1, 2, 3, 4, 5, 6]
@@ -116,4 +127,3 @@ compute:
   mixed_precision: true
   total_gpu_hour_cap: 60
   overrun_amendment: limit_M2_to_horizons_10_and_100
-
