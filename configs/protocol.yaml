@@ -49,8 +49,14 @@ splits:
 selection:
   metric: macro_f1
   trials_per_model: 12
+  independently_per_horizon: true
+  stochastic_selection_seeds: [5, 7, 13]
+  stochastic_ranking: mean_validation_macro_f1
+  tie_break: [lower_seed_sd, fewer_parameters, lower_learning_rate, canonical_grid_order]
+  exact_unrounded_ties_only: true
   max_epochs: 40
   early_stopping_patience: 5
+  shortened_tuning_schedule: prohibited
 
 randomness:
   seeds: [11, 23, 47, 91, 137]
@@ -78,11 +84,12 @@ models:
     kind: multinomial_logistic_regression
     penalty: l2
     normalization: train_only_standardization
+    c_grid: {scale: log10, start: 0.0001, stop: 100.0, count: 12, endpoints_included: true}
   B2:
     kind: lightgbm
     leaves_search: [31, 63]
-    learning_rate: 0.05
-    min_data_in_leaf: 200
+    learning_rate_search: [0.03, 0.05, 0.1]
+    min_data_in_leaf_search: [200, 400]
     early_stopping: true
   M1:
     kind: deeplob
@@ -90,18 +97,24 @@ models:
     lstm_hidden: 64
     paper_optimizer: {name: Adam, learning_rate: 0.01, epsilon: 1.0}
     official_code_optimizer: {name: Adam, learning_rate: 0.0001}
+    learning_rate_search: [0.0001, 0.001, 0.01]
+    adam_epsilon_search: [0.00000001, 1.0]
+    classifier_dropout_search: [0.0, 0.2]
+    dropout_location: final_lstm_output_before_classifier
+    adam_weight_decay: 0.0
     primary_batch_size: 64
     protocol_difference_batch_size: {pytorch: 64, tensorflow: 128}
+    paper_anchor_all_final_seeds_each_horizon: true
   M2:
     kind: transformer_encoder
     d_model: 64
     heads: 4
-    layers: 3
+    layers_search: [2, 3]
     ffn_dim: 128
-    dropout: 0.1
+    dropout_search: [0.1, 0.2]
     positional_embedding: learned
     pooling: last_token
-    optimizer: {name: AdamW, learning_rate: 0.001, weight_decay: 0.01}
+    optimizer: {name: AdamW, learning_rate_search: [0.0003, 0.001, 0.003], weight_decay: 0.01}
     warmup_fraction: 0.05
     schedule: cosine
     gradient_clip: 1.0
@@ -125,5 +138,12 @@ compute:
   host: norgate
   gpu: NVIDIA_GeForce_RTX_3070_8GB
   mixed_precision: true
-  total_gpu_hour_cap: 60
-  overrun_amendment: limit_M2_to_horizons_10_and_100
+  planning_gpu_hours: 200
+  hard_gpu_hour_stop: false
+  timing_gate:
+    warmup_epochs: 1
+    measured_epochs: 3
+    statistic: median
+    report_early_stopping_projection: true
+    report_no_early_stopping_upper_bound: true
+    may_change_scientific_scope: false
