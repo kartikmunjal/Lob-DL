@@ -13,9 +13,11 @@ def test_windows_never_cross_segments():
 
 
 def test_single_future_label_threshold_is_inclusive():
-    features = np.zeros((4, 40), dtype=np.float32)
-    mids = np.array([100.0, 100.2, 100.0, 99.8])
+    features = np.zeros((13, 40), dtype=np.float32)
+    mids = np.full(13, 100.0)
+    mids[10:13] = [100.2, 100.0, 99.8]
     features[:, 0] = mids
     features[:, 2] = mids
     labels = reconstruct_single_future_labels(features, horizon_events=10, alpha=0.002)
     assert labels[:3].tolist() == [2, 1, 0]
+    assert (labels[-10:] == -1).all()

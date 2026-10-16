@@ -8,7 +8,14 @@ import numpy as np
 
 from lobdl.audit import assert_no_window_seams, assert_split_days, class_balance
 from lobdl.config import load_protocol
-from lobdl.data.fi2010 import FI2010Day, Segment, build_windows, decode_labels, reconstruct_single_future_labels, sha256
+from lobdl.data.fi2010 import (
+    FI2010Day,
+    Segment,
+    build_windows,
+    decode_labels,
+    reconstruct_single_future_labels,
+    sha256,
+)
 
 
 def load_npy_day(root: Path, day: int) -> FI2010Day:
@@ -54,7 +61,7 @@ def main() -> None:
             shipped = decode_labels(day.labels, horizon)
             rebuilt = reconstruct_single_future_labels(day.features, horizon, alpha)
             valid = np.zeros(len(shipped), dtype=bool)
-            rows = horizon // 10
+            rows = horizon
             for segment in day.segments:
                 valid[segment.start : segment.stop - rows] = True
             matches = int((shipped[valid] == rebuilt[valid]).sum())
@@ -70,4 +77,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
