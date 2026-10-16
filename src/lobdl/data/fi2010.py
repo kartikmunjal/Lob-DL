@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import hashlib
-import itertools
 import json
-from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Iterator
 
 import numpy as np
 
@@ -86,7 +85,7 @@ def split_stock_segments(features: np.ndarray, day: int) -> tuple[Segment, ...]:
     bounds = np.concatenate(([0], candidates, [len(features)]))
     return tuple(
         Segment(day=day, stock=i + 1, start=int(a), stop=int(b))
-        for i, (a, b) in enumerate(itertools.pairwise(bounds))
+        for i, (a, b) in enumerate(zip(bounds[:-1], bounds[1:]))
     )
 
 
@@ -106,7 +105,7 @@ def validate_segments(segments: tuple[Segment, ...], n: int, day: int) -> None:
         raise ValueError(f"day {day}: expected five stock segments")
     if segments[0].start != 0 or segments[-1].stop != n:
         raise ValueError(f"day {day}: manifest does not cover the file")
-    for left, right in itertools.pairwise(segments):
+    for left, right in zip(segments[:-1], segments[1:]):
         if left.stop != right.start:
             raise ValueError(f"day {day}: manifest gap or overlap")
 
@@ -137,9 +136,7 @@ def build_windows(
     purge: int = 0,
     lob_only: bool = True,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    # FI-2010 is sampled once per book event. The five shipped label columns
-    # correspond to 10, 20, 30, 50, and 100 future rows respectively.
-    horizon_rows = horizon_events
+    horizon_rows = horizon_events // 10
     labels = decode_labels(day.labels, horizon_events)
     indices = list(iter_window_indices(day.segments, window, horizon_rows, purge))
     feature_count = 40 if lob_only else 144
@@ -154,7 +151,7 @@ def build_windows(
 
 
 def reconstruct_single_future_labels(features: np.ndarray, horizon_events: int, alpha: float) -> np.ndarray:
-    rows = horizon_events
+    rows = horizon_events // 10
     mid = (features[:, 0].astype(np.float64) + features[:, 2]) / 2.0
     out = np.full(len(mid), -1, dtype=np.int8)
     returns = (mid[rows:] - mid[:-rows]) / np.maximum(np.abs(mid[:-rows]), 1e-12)
@@ -166,7 +163,7 @@ def reconstruct_single_future_labels(features: np.ndarray, horizon_events: int, 
 
 
 def reconstruct_smoothed_ablation(features: np.ndarray, horizon_events: int, alpha: float) -> np.ndarray:
-    rows = horizon_events
+    rows = horizon_events // 10
     mid = (features[:, 0].astype(np.float64) + features[:, 2]) / 2.0
     out = np.full(len(mid), -1, dtype=np.int8)
     sums = np.cumsum(np.concatenate(([0.0], mid)))
