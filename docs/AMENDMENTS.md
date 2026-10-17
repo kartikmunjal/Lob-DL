@@ -107,3 +107,7 @@ This amendment was authorized and committed before any hyperparameter search or 
 ### Implementation correction record
 
 Commit `1c6635e` incorrectly treated every public representation row as one underlying event. Commit `77dccf7` transparently reverted it before any model search or test evaluation. Effective code retains the mapping `horizon_rows = horizon_events / 10`.
+
+## 2026-10-16 — Timing-projection implementation clarification
+
+This implementation clarification was committed before timing, search, or test evaluation. The expected early-stopping projection uses a fixed 20-epoch planning scenario (half the registered 40-epoch ceiling); the upper bound uses all 40 epochs. The 20-epoch value is not a training stop, selection rule, or compute gate. Actual training continues under validation patience 5 up to 40 epochs, and timing cannot change any scientific scope.

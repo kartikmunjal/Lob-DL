@@ -42,10 +42,10 @@ def causal_features(raw: np.ndarray) -> tuple[np.ndarray, list[str]]:
         columns.append(np.nan_to_num(value, nan=0.0, posinf=0.0, neginf=0.0))
 
     add("relative_spread", spread / safe_mid)
-    for depth in (5, 10):
-        for level in range(depth):
-            add(f"ask_distance_l{level + 1}_d{depth}", (ask_p[:, level] - ask_p[:, 0]) / safe_mid)
-            add(f"bid_distance_l{level + 1}_d{depth}", (bid_p[:, 0] - bid_p[:, level]) / safe_mid)
+    for level in (5, 10):
+        index = level - 1
+        add(f"ask_distance_l{level}", (ask_p[:, index] - ask_p[:, 0]) / safe_mid)
+        add(f"bid_distance_l{level}", (bid_p[:, 0] - bid_p[:, index]) / safe_mid)
     for depth in (1, 3, 5, 10):
         bid_total = bid_v[:, :depth].sum(axis=1)
         ask_total = ask_v[:, :depth].sum(axis=1)
@@ -80,4 +80,3 @@ def causal_features(raw: np.ndarray) -> tuple[np.ndarray, list[str]]:
     for window in (1, 5, 10):
         add(f"top_ofi_{window}", _rolling_sum(ofi, window))
     return np.column_stack(columns).astype(np.float32), names
-

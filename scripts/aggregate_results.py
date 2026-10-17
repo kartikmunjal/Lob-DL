@@ -8,13 +8,22 @@ import numpy as np
 
 from lobdl.metrics import bootstrap_metrics, classification_metrics
 
-
 SEEDS = (11, 23, 47, 91, 137)
+M1_ANCHOR = {"learning_rate": 0.01, "epsilon": 1.0, "dropout": 0.0}
 
 
 def locate_runs(root: Path, model: str, horizon: int, variant: str | None):
     base = root / model / f"h{horizon}"
-    if model in ("M1", "M2", "B2"):
+    if model == "M1_anchor" and not base.exists():
+        selection = json.loads(
+            (root / "selections" / "M1" / f"h{horizon}.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        if selection["selected"]["parameters"] != M1_ANCHOR:
+            raise FileNotFoundError("M1 anchor runs are absent and the anchor did not win")
+        base = root / "M1" / f"h{horizon}"
+    if model in ("M1", "M1_anchor", "M2", "B2", "B2_shipped144"):
         return [base / f"seed{seed}" for seed in SEEDS]
     return [base / (variant or "deterministic")]
 
@@ -22,7 +31,20 @@ def locate_runs(root: Path, model: str, horizon: int, variant: str | None):
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--artifacts", type=Path, default=Path("artifacts"))
-    parser.add_argument("--model", choices=("B0", "B1", "B2", "M1", "M2"), required=True)
+    parser.add_argument(
+        "--model",
+        choices=(
+            "B0",
+            "B1",
+            "B1_shipped144",
+            "B2",
+            "B2_shipped144",
+            "M1",
+            "M1_anchor",
+            "M2",
+        ),
+        required=True,
+    )
     parser.add_argument("--horizon", type=int, choices=(10, 20, 50, 100), required=True)
     parser.add_argument("--variant", choices=("majority", "persistence"))
     parser.add_argument("--replicates", type=int, default=2000)
@@ -51,7 +73,12 @@ def main() -> None:
     ci = bootstrap_metrics(labels, probabilities, groups, replicates=args.replicates)
     result = {
         "model": args.model, "variant": args.variant, "horizon": args.horizon,
-        "N_trials": int(sum(report["N_trials"] for report in reports)),
+        "selection_N_trials": int(reports[0].get("selection_N_trials", 0)),
+        "reported_variant_N_trials": (
+            1
+            if args.model == "M1_anchor"
+            else int(reports[0].get("reported_variant_N_trials", 0))
+        ),
         "N_seeds": len(runs), "seed_macro_f1_sd": float(np.std(seed_scores, ddof=1)) if len(seed_scores) > 1 else 0.0,
         "metrics": point, "ci95": ci,
         "compute_hours": float(sum(report.get("gpu_hours", report.get("compute_hours", 0.0)) for report in reports)),
@@ -67,4 +94,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

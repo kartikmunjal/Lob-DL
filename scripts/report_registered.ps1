@@ -1,0 +1,38 @@
+param(
+  [string]$Python = "python",
+  [string]$Artifacts = "artifacts",
+  [int]$Replicates = 2000
+)
+$ErrorActionPreference = "Stop"
+$horizons = @(10, 20, 50, 100)
+$systems = @(
+  "B0:majority",
+  "B0:persistence",
+  "B1",
+  "B1_shipped144",
+  "B2",
+  "B2_shipped144",
+  "M1",
+  "M1_anchor",
+  "M2"
+)
+
+foreach ($horizon in $horizons) {
+  & $Python scripts/aggregate_results.py --artifacts $Artifacts --model B0 `
+    --variant majority --horizon $horizon --replicates $Replicates
+  & $Python scripts/aggregate_results.py --artifacts $Artifacts --model B0 `
+    --variant persistence --horizon $horizon --replicates $Replicates
+  foreach ($model in @(
+    "B1", "B1_shipped144", "B2", "B2_shipped144", "M1", "M1_anchor", "M2"
+  )) {
+    & $Python scripts/aggregate_results.py --artifacts $Artifacts --model $model `
+      --horizon $horizon --replicates $Replicates
+  }
+  for ($left = 0; $left -lt $systems.Count; $left++) {
+    for ($right = $left + 1; $right -lt $systems.Count; $right++) {
+      & $Python scripts/paired_comparison.py --artifacts $Artifacts `
+        --system-a $systems[$left] --system-b $systems[$right] `
+        --horizon $horizon --replicates $Replicates
+    }
+  }
+}

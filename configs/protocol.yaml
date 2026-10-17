@@ -129,6 +129,7 @@ models:
 
 features:
   primary:
+    resulting_feature_count: 29
     relative_spread: true
     price_distance_levels: [5, 10]
     volume_imbalance_levels: [1, 3, 5, 10]
@@ -152,6 +153,7 @@ compute:
     warmup_epochs: 1
     measured_epochs: 3
     statistic: median
+    expected_projection_epoch_scenario: 20
     report_early_stopping_projection: true
     report_no_early_stopping_upper_bound: true
     may_change_scientific_scope: false

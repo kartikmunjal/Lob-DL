@@ -16,4 +16,11 @@ def test_features_are_finite_and_causal_prefix_stable():
     assert names == prefix_names
     np.testing.assert_allclose(full[:70], prefix)
     assert np.isfinite(full).all()
-
+    assert full.shape == (100, 29)
+    assert len(names) == len(set(names)) == 29
+    assert {
+        "ask_distance_l5",
+        "bid_distance_l5",
+        "ask_distance_l10",
+        "bid_distance_l10",
+    } <= set(names)
