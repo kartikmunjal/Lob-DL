@@ -82,3 +82,28 @@ At every horizon, run the M1 paper-optimizer anchor with all five final seeds ev
 ### Reporting
 
 Validation scores are explicitly labeled best-of-12 and potentially optimistic. Scientific claims use untouched test metrics only. Reports distinguish candidate configurations (`selection_N_trials`), seed replications, and preregistered reported variants. The search does not cover architecture width, and that limitation is stated.
+
+## 2026-10-16 — FI-2010 label-formula documentation correction
+
+### Status and reason
+
+This amendment was authorized and committed before any hyperparameter search or model test evaluation. The primary FI-2010 paper was rechecked after a data-integrity diagnostic showed that the earlier “single future mid-price” description did not reproduce the shipped labels. The original preregistration remains preserved above this amendment ledger; this section supersedes only its formula description and ablation designation.
+
+### Authoritative formula and horizon units
+
+- Each public FI-2010 representation contains information for 10 consecutive underlying market events.
+- The five shipped label columns use `k = {1, 2, 3, 5, 10}` future representations, corresponding to `{10, 20, 30, 50, 100}` underlying events.
+- For representation index `i`, the documented relative change is `(mean(m[i+1:i+k+1]) - m[i]) / m[i]`.
+- The documented threshold is inclusive: label 1 for change at least `0.002`, label 2 between the thresholds, and label 3 for change at most `-0.002`.
+- Primary reporting remains restricted to underlying-event horizons `{10, 20, 50, 100}`; the 30-event column remains excluded.
+
+### Primary targets and reconstruction diagnostic
+
+- The shipped FI-2010 labels remain the sole primary ground truth. No target array or class encoding changes.
+- The previously named forward-smoothed-label “ablation” is removed because the forward mean is the documented source formula, not an alternative target.
+- Reconstruction from public DecPre representation rows is a data-integrity diagnostic only and is not assumed to reproduce the confidential raw-data labeling pipeline exactly. The public paper states that normalized data were released to prevent reconstruction of the original Nasdaq data, and each public representation compresses 10 underlying events.
+- Report the full preregistered formula-agreement table at alpha `0.002`; do not tune alpha, alter labels, discard disagreements, or use agreement to select a model.
+
+### Implementation correction record
+
+Commit `1c6635e` incorrectly treated every public representation row as one underlying event. Commit `77dccf7` transparently reverted it before any model search or test evaluation. Effective code retains the mapping `horizon_rows = horizon_events / 10`.

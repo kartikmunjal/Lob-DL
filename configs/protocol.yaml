@@ -10,10 +10,18 @@ data:
     window_length: 100
     primary_horizons_events: [10, 20, 50, 100]
     available_horizons_events: [10, 20, 30, 50, 100]
-    primary_labels: shipped_single_future_midprice
+    primary_labels: shipped_forward_mean_midprice
+    documented_label_formula: (mean_next_k_representation_midprices-current_midprice)/current_midprice
+    representation_underlying_events: 10
+    shipped_label_k_representations: [1, 2, 3, 5, 10]
     threshold_alpha: 0.002
     label_encoding: {up: 1, stationary: 2, down: 3}
-    smoothed_forward_mean_label_ablation: true
+    smoothed_forward_mean_label_ablation: false
+    decpre_label_reconstruction:
+      role: data_integrity_diagnostic_only
+      exact_agreement_assumed: false
+      alpha_tuning: prohibited
+      disagreement_changes_primary_targets: false
     segment_keys: [stock, day]
   lobster:
     primary_threshold_alpha: 0.002
