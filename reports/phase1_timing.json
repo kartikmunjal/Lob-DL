@@ -1,0 +1,58 @@
+{
+  "status": "measured_before_search",
+  "device": "NVIDIA GeForce RTX 3070",
+  "horizon": 10,
+  "train_days": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "validation_day": 7,
+  "warmup_epochs": 1,
+  "measured_epochs": 3,
+  "statistic": "median",
+  "expected_projection_epoch_scenario": 20,
+  "upper_bound_epochs": 40,
+  "results": {
+    "M1": {
+      "configuration": {
+        "learning_rate": 0.01,
+        "epsilon": 1.0,
+        "dropout": 0.0
+      },
+      "fit_count_upper_bound": 184,
+      "warmup_epoch_seconds_unmeasured": 91.74099700001534,
+      "measured_epoch_seconds": [
+        61.55039319998468,
+        61.43694129999494,
+        61.29151670000283
+      ],
+      "median_epoch_seconds": 61.43694129999494,
+      "expected_20_epoch_gpu_hours": 62.80220666221705,
+      "no_early_stopping_40_epoch_gpu_hours": 125.6044133244341
+    },
+    "M2": {
+      "configuration": {
+        "learning_rate": 0.001,
+        "layers": 3,
+        "dropout": 0.1
+      },
+      "fit_count_upper_bound": 164,
+      "warmup_epoch_seconds_unmeasured": 98.35132100002375,
+      "measured_epoch_seconds": [
+        68.60224340000423,
+        68.43924430001061,
+        68.4682842999755
+      ],
+      "median_epoch_seconds": 68.4682842999755,
+      "expected_20_epoch_gpu_hours": 62.382214584422115,
+      "no_early_stopping_40_epoch_gpu_hours": 124.76442916884423
+    }
+  },
+  "combined_expected_gpu_hours": 125.18442124663918,
+  "combined_upper_bound_gpu_hours": 250.36884249327835,
+  "scope_changes_permitted": false
+}
