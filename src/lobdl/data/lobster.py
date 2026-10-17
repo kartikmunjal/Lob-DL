@@ -84,7 +84,8 @@ class SnapshotInitializedBook:
                 self.bid[bid_price] = bid_size
         self.orders: dict[int, tuple[int, int, int]] = {}
         self.counts: Counter[str] = Counter()
-        self.assert_invariants()
+        _assert_book_invariants(self.bid, self.ask)
+        self.first_crossed_or_locked: dict[str, int | float] | None = None
 
     def _levels(self, direction: int) -> dict[int, int]:
         if direction not in (-1, 1):
@@ -136,10 +137,17 @@ class SnapshotInitializedBook:
             self.counts["halt_indicators"] += 1
         else:
             raise ValueError(f"unsupported LOBSTER event type {kind}")
-        self.assert_invariants()
-
-    def assert_invariants(self) -> None:
-        _assert_book_invariants(self.bid, self.ask)
+        if self.bid and self.ask and max(self.bid) >= min(self.ask):
+            self.counts["crossed_or_locked_states"] += 1
+            if self.first_crossed_or_locked is None:
+                self.first_crossed_or_locked = {
+                    "message_index": self.counts["replayed_messages"] + 1,
+                    "seconds_since_midnight": message.time,
+                }
+        if any(size <= 0 for size in self.bid.values()) or any(
+            size <= 0 for size in self.ask.values()
+        ):
+            raise AssertionError("nonpositive displayed depth after clamp")
 
     def snapshot(self, levels: int = 10) -> np.ndarray:
         return _snapshot(self.bid, self.ask, levels)
@@ -267,5 +275,12 @@ def validate_pure_replay(
         ],
         "event_counts": event_counts,
         "event_fractions_of_replayed_messages": {key: event_counts[key] / denominator for key in categories},
+        "invariant_diagnostics": {
+            "crossed_or_locked_states": event_counts.get("crossed_or_locked_states", 0),
+            "fraction_of_replayed_messages": event_counts.get("crossed_or_locked_states", 0)
+            / denominator,
+            "first_crossed_or_locked": book.first_crossed_or_locked,
+            "repair_or_reseed_applied": False,
+        },
     }
     return report, exact[:, 2]

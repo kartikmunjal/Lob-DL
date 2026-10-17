@@ -32,3 +32,14 @@ def test_known_orders_are_attributed_after_snapshot():
     book.apply(Message(0.2, 2, 10, 2, 99, 1))
     assert book.bid[99] == 3
     assert book.counts["attributed_events"] == 1
+
+
+def test_crossed_state_is_logged_without_repair_or_reseed():
+    book = SnapshotInitializedBook(np.array([102, 12, 100, 10]))
+    book.apply(Message(0.1, 1, 10, 5, 103, 1))
+    assert book.counts["crossed_or_locked_states"] == 1
+    assert book.first_crossed_or_locked == {
+        "message_index": 2,
+        "seconds_since_midnight": 0.1,
+    }
+    assert book.bid[103] == 5
