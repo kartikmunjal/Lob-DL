@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import hashlib
+import itertools
 import json
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator
 
 import numpy as np
 
@@ -85,7 +86,7 @@ def split_stock_segments(features: np.ndarray, day: int) -> tuple[Segment, ...]:
     bounds = np.concatenate(([0], candidates, [len(features)]))
     return tuple(
         Segment(day=day, stock=i + 1, start=int(a), stop=int(b))
-        for i, (a, b) in enumerate(zip(bounds[:-1], bounds[1:]))
+        for i, (a, b) in enumerate(itertools.pairwise(bounds))
     )
 
 
@@ -105,7 +106,7 @@ def validate_segments(segments: tuple[Segment, ...], n: int, day: int) -> None:
         raise ValueError(f"day {day}: expected five stock segments")
     if segments[0].start != 0 or segments[-1].stop != n:
         raise ValueError(f"day {day}: manifest does not cover the file")
-    for left, right in zip(segments[:-1], segments[1:]):
+    for left, right in itertools.pairwise(segments):
         if left.stop != right.start:
             raise ValueError(f"day {day}: manifest gap or overlap")
 
@@ -150,25 +151,27 @@ def build_windows(
     return x, y, group
 
 
-def reconstruct_single_future_labels(features: np.ndarray, horizon_events: int, alpha: float) -> np.ndarray:
-    rows = horizon_events // 10
-    mid = (features[:, 0].astype(np.float64) + features[:, 2]) / 2.0
-    out = np.full(len(mid), -1, dtype=np.int8)
-    returns = (mid[rows:] - mid[:-rows]) / np.maximum(np.abs(mid[:-rows]), 1e-12)
-    tolerance = 8.0 * np.finfo(features.dtype).eps if np.issubdtype(features.dtype, np.floating) else 0.0
-    out[:-rows] = np.where(
-        returns >= alpha - tolerance, 2, np.where(returns <= -alpha + tolerance, 0, 1)
-    )
-    return out
+def reconstruct_forward_mean_labels(
+    features: np.ndarray, horizon_events: int, alpha: float
+) -> np.ndarray:
+    """Reconstruct the paper's documented formula from public DecPre rows.
 
-
-def reconstruct_smoothed_ablation(features: np.ndarray, horizon_events: int, alpha: float) -> np.ndarray:
+    This is an integrity diagnostic, not a replacement for shipped labels. Each
+    public representation summarizes ten confidential underlying events.
+    """
     rows = horizon_events // 10
     mid = (features[:, 0].astype(np.float64) + features[:, 2]) / 2.0
     out = np.full(len(mid), -1, dtype=np.int8)
     sums = np.cumsum(np.concatenate(([0.0], mid)))
+    tolerance = (
+        8.0 * np.finfo(features.dtype).eps
+        if np.issubdtype(features.dtype, np.floating)
+        else 0.0
+    )
     for t in range(len(mid) - rows):
         forward_mean = (sums[t + rows + 1] - sums[t + 1]) / rows
         change = (forward_mean - mid[t]) / max(abs(mid[t]), 1e-12)
-        out[t] = 2 if change > alpha else (0 if change < -alpha else 1)
+        out[t] = (
+            2 if change >= alpha - tolerance else (0 if change <= -alpha + tolerance else 1)
+        )
     return out

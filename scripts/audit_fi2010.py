@@ -8,7 +8,14 @@ import numpy as np
 
 from lobdl.audit import assert_no_window_seams, assert_split_days, class_balance
 from lobdl.config import load_protocol
-from lobdl.data.fi2010 import FI2010Day, Segment, build_windows, decode_labels, reconstruct_single_future_labels, sha256
+from lobdl.data.fi2010 import (
+    FI2010Day,
+    Segment,
+    build_windows,
+    decode_labels,
+    reconstruct_forward_mean_labels,
+    sha256,
+)
 
 
 def load_npy_day(root: Path, day: int) -> FI2010Day:
@@ -28,11 +35,26 @@ def main() -> None:
     protocol = load_protocol(args.config)
     split = protocol["splits"]
     assert_split_days(set(split["train_days"]), set(split["validation_days"]), set(split["test_days"]))
-    report: dict = {"files": {}, "splits": {}, "label_agreement": {}}
+    report: dict = {
+        "files": {},
+        "splits": {},
+        "documented_formula_agreement": {
+            "role": "data_integrity_diagnostic_only",
+            "changes_primary_shipped_targets": False,
+            "by_horizon": {},
+        },
+    }
     for day in range(1, 11):
         path = args.data / f"day_{day:02d}.npy"
-        report["files"][str(day)] = {"events": int(np.load(path, mmap_mode="r").shape[0]), "sha256": sha256(path)}
-    for split_name, key in (("train", "train_days"), ("validation", "validation_days"), ("test", "test_days")):
+        report["files"][str(day)] = {
+            "events": int(np.load(path, mmap_mode="r").shape[0]),
+            "sha256": sha256(path),
+        }
+    for split_name, key in (
+        ("train", "train_days"),
+        ("validation", "validation_days"),
+        ("test", "test_days"),
+    ):
         report["splits"][split_name] = {}
         for horizon in protocol["data"]["fi2010"]["primary_horizons_events"]:
             labels = []
@@ -44,7 +66,10 @@ def main() -> None:
                 labels.append(y)
                 window_count += len(y)
             combined = np.concatenate(labels)
-            report["splits"][split_name][str(horizon)] = {"windows": window_count, "class_balance": class_balance(combined)}
+            report["splits"][split_name][str(horizon)] = {
+                "windows": window_count,
+                "class_balance": class_balance(combined),
+            }
     alpha = float(protocol["data"]["fi2010"]["threshold_alpha"])
     for horizon in protocol["data"]["fi2010"]["primary_horizons_events"]:
         agree = total = 0
@@ -52,7 +77,7 @@ def main() -> None:
         for day_number in range(1, 11):
             day = load_npy_day(args.data, day_number)
             shipped = decode_labels(day.labels, horizon)
-            rebuilt = reconstruct_single_future_labels(day.features, horizon, alpha)
+            rebuilt = reconstruct_forward_mean_labels(day.features, horizon, alpha)
             valid = np.zeros(len(shipped), dtype=bool)
             rows = horizon // 10
             for segment in day.segments:
@@ -62,7 +87,12 @@ def main() -> None:
             agree += matches
             total += count
             by_day[str(day_number)] = {"agree": matches, "n": count, "rate": matches / count}
-        report["label_agreement"][str(horizon)] = {"agree": agree, "n": total, "rate": agree / total, "by_day": by_day}
+        report["documented_formula_agreement"]["by_horizon"][str(horizon)] = {
+            "agree": agree,
+            "n": total,
+            "rate": agree / total,
+            "by_day": by_day,
+        }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2))
@@ -70,4 +100,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
