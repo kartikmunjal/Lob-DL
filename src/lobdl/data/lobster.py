@@ -283,4 +283,6 @@ def validate_pure_replay(
             "repair_or_reseed_applied": False,
         },
     }
-    return report, exact[:, 2]
+    # Row 1 is the supplied initialization snapshot and therefore matches by
+    # construction. Including it keeps masks aligned one-for-one with vendor rows.
+    return report, np.concatenate((np.array([True]), exact[:, 2]))
