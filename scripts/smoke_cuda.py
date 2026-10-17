@@ -6,12 +6,14 @@ import torch
 
 from lobdl.models import count_parameters
 from lobdl.neural import M1_ANCHOR, build_model
+from lobdl.training import seed_everything
 
 
 def main() -> None:
     if not torch.cuda.is_available():
         raise SystemExit("CUDA is unavailable")
     device = torch.device("cuda")
+    seed_everything(5)
     configurations = {
         "M1": M1_ANCHOR,
         "M2": {"learning_rate": 1e-3, "layers": 3, "dropout": 0.1},

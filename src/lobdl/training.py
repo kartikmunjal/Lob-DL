@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import random
 import time
 from dataclasses import dataclass
@@ -11,13 +12,19 @@ import torch
 from sklearn.metrics import f1_score
 from torch import nn
 
+os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+
 
 def seed_everything(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-    torch.use_deterministic_algorithms(True, warn_only=True)
+    torch.use_deterministic_algorithms(True, warn_only=False)
+    if torch.cuda.is_available():
+        torch.backends.cuda.enable_flash_sdp(False)
+        torch.backends.cuda.enable_mem_efficient_sdp(False)
+        torch.backends.cuda.enable_math_sdp(True)
 
 
 @dataclass
@@ -87,4 +94,3 @@ def fit_classifier(
     elapsed = (time.perf_counter() - started) / 3600.0
     output.with_suffix(".history.json").write_text(json.dumps(history, indent=2) + "\n", encoding="utf-8")
     return FitResult(best_epoch, best_score, elapsed, history)
-
