@@ -12,13 +12,6 @@ if (Test-Path $frozen) {
 }
 
 $runner = (Resolve-Path (Join-Path $PSScriptRoot "run_registered.ps1")).Path
-$active = Get-CimInstance Win32_Process | Where-Object {
-  ($_.CommandLine -like "*run_registered.ps1*" -and $_.CommandLine -like "*-Stage select*") `
-    -or $_.CommandLine -like "*select_neural.py*"
-}
-if ($active) {
-  return
-}
 
 $logRoot = Join-Path $repo "$Artifacts/logs"
 New-Item -ItemType Directory -Path $logRoot -Force | Out-Null

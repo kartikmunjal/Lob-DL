@@ -16,6 +16,19 @@ function Invoke-RegisteredPython {
   }
 }
 
+$mutex = New-Object System.Threading.Mutex($false, "Global\LobDLRegisteredRun")
+$mutexAcquired = $false
+try {
+  try {
+    $mutexAcquired = $mutex.WaitOne(0)
+  } catch [System.Threading.AbandonedMutexException] {
+    $mutexAcquired = $true
+  }
+  if (-not $mutexAcquired) {
+    Write-Output "Another registered Lob-DL runner already owns the global mutex."
+    return
+  }
+
 if (-not (Test-Path "reports/phase1_timing.json")) {
   throw "Commit the registered Phase 1 timing report before starting search."
 }
@@ -83,4 +96,10 @@ foreach ($horizon in $horizons) {
         --variant anchor --horizon $horizon --seed $seed --output $Artifacts
     }
   }
+}
+} finally {
+  if ($mutexAcquired) {
+    $mutex.ReleaseMutex()
+  }
+  $mutex.Dispose()
 }
