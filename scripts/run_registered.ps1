@@ -12,7 +12,7 @@ $horizons = @(10, 20, 50, 100)
 function Invoke-RegisteredPython {
   & $Python @args
   if ($LASTEXITCODE -ne 0) {
-    throw "Registered Python command failed with exit code $LASTEXITCODE: $Python $args"
+    throw "Registered Python command failed with exit code ${LASTEXITCODE}: $Python $args"
   }
 }
 
