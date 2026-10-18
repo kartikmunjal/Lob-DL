@@ -256,6 +256,67 @@ def generate_compute(artifacts: Path, output: Path) -> list[dict]:
     return rows
 
 
+def generate_audits(artifacts: Path, output: Path) -> None:
+    fi = read_json(artifacts / "audit" / "fi2010.json")
+    fi_rows = [
+        {
+            "horizon": int(horizon),
+            "formula_agree": values["agree"],
+            "eligible_rows": values["n"],
+            "agreement_rate": values["rate"],
+        }
+        for horizon, values in fi["label_agreement"].items()
+        if int(horizon) in HORIZONS
+    ]
+    write_csv(output / "tables" / "fi_label_formula_agreement.csv", fi_rows)
+
+    lobster = read_json(artifacts / "audit" / "lobster" / "lobster_all.json")
+    overall, time_rows = [], []
+    for ticker, values in lobster["tickers"].items():
+        counts = values["event_counts"]
+        exact = values["exact_match_rates"]
+        first = values["first_top_10_mismatch"] or {}
+        overall.append(
+            {
+                "ticker": ticker,
+                "replayed_messages": values["replayed_messages"],
+                "level_1_exact_rate": exact["level_1"],
+                "top_5_exact_rate": exact["top_5"],
+                "top_10_exact_rate": exact["top_10"],
+                "first_mismatch_message": first.get("message_index"),
+                "first_mismatch_seconds_since_midnight": first.get("seconds_since_midnight"),
+                "eligible_exact_100_row_windows": values["eligible_exact_windows"],
+                "unattributed_applied_events": counts["unattributed_applied_events"],
+                "zero_clamps": counts["zero_clamps"],
+                "absent_level_skips": counts["absent_level_skips"],
+                "hidden_executions": counts["hidden_executions"],
+            }
+        )
+        for item in values["time_bins"]:
+            time_rows.append({"ticker": ticker, **item})
+    write_csv(output / "tables" / "lobster_reconstruction_summary.csv", overall)
+    write_csv(output / "tables" / "lobster_reconstruction_by_time.csv", time_rows)
+    fig, axis = plt.subplots(figsize=(9, 5.5))
+    for ticker in lobster["tickers"]:
+        values = [row for row in time_rows if row["ticker"] == ticker]
+        axis.plot(
+            [row["minutes_since_open_start"] for row in values],
+            [row["top_10_exact_rate"] for row in values],
+            marker="o",
+            label=ticker,
+        )
+    axis.set(
+        xlabel="Minutes since 09:30",
+        ylabel="Exact top-10 replay rate",
+        title="Pure replay mismatch accumulation without reseeding",
+    )
+    axis.grid(alpha=0.25)
+    axis.legend()
+    fig.tight_layout()
+    fig.savefig(output / "figures" / "lobster_replay_exact_rate.png", dpi=180)
+    plt.close(fig)
+
+
 def markdown_summary(fi_rows: list[dict], transfer_rows: list[dict], output: Path) -> None:
     lines = [
         "# Generated results summary",
@@ -305,8 +366,9 @@ def main() -> None:
     generate_economics(args.artifacts, args.output)
     generate_reliability(args.artifacts, args.output)
     generate_compute(args.artifacts, args.output)
+    generate_audits(args.artifacts, args.output)
     markdown_summary(fi_rows, transfer_rows, args.output)
-    print(json.dumps({"output": str(args.output), "figures": 5, "tables": 5}, indent=2))
+    print(json.dumps({"output": str(args.output), "figures": 6, "tables": 8}, indent=2))
 
 
 if __name__ == "__main__":

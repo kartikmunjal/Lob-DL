@@ -6,6 +6,7 @@ from scripts.generate_report_assets import (
     PRIMARY_SYSTEMS,
     TRANSFER_NAMES,
     generate_ablation_table,
+    generate_audits,
     generate_compute,
     generate_economics,
     generate_fi,
@@ -97,6 +98,41 @@ def test_all_public_assets_generate_from_named_reports(tmp_path):
                     / f"summary_{labels}.json",
                     transfer_summary(),
                 )
+    write(
+        artifacts / "audit" / "fi2010.json",
+        {
+            "label_agreement": {
+                str(horizon): {"agree": 8, "n": 10, "rate": 0.8}
+                for horizon in HORIZONS
+            }
+        },
+    )
+    ticker_audit = {
+        "replayed_messages": 10,
+        "exact_match_rates": {"level_1": 0.5, "top_5": 0.4, "top_10": 0.3},
+        "first_top_10_mismatch": {"message_index": 2, "seconds_since_midnight": 34201.0},
+        "eligible_exact_windows": 0,
+        "event_counts": {
+            "unattributed_applied_events": 1,
+            "zero_clamps": 1,
+            "absent_level_skips": 1,
+            "hidden_executions": 1,
+        },
+        "time_bins": [
+            {
+                "minutes_since_open_start": 0,
+                "minutes_since_open_end": 30,
+                "rows": 10,
+                "level_1_exact_rate": 0.5,
+                "top_5_exact_rate": 0.4,
+                "top_10_exact_rate": 0.3,
+            }
+        ],
+    }
+    write(
+        artifacts / "audit" / "lobster" / "lobster_all.json",
+        {"tickers": {ticker: ticker_audit for ticker in ("AAPL", "AMZN")}},
+    )
     (output / "figures").mkdir(parents=True)
     fi = generate_fi(artifacts, output)
     transfer = generate_transfer(artifacts, output)
@@ -104,7 +140,8 @@ def test_all_public_assets_generate_from_named_reports(tmp_path):
     generate_economics(artifacts, output)
     generate_reliability(artifacts, output)
     generate_compute(artifacts, output)
+    generate_audits(artifacts, output)
     markdown_summary(fi, transfer, output)
     assert (output / "RESULTS.md").exists()
-    assert len(list((output / "figures").glob("*.png"))) == 5
-    assert len(list((output / "tables").glob("*.csv"))) == 5
+    assert len(list((output / "figures").glob("*.png"))) == 6
+    assert len(list((output / "tables").glob("*.csv"))) == 8
