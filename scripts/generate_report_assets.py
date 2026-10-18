@@ -237,7 +237,7 @@ def generate_compute(artifacts: Path, output: Path) -> list[dict]:
                     "system": system,
                     "horizon": horizon,
                     "parameters": (
-                        "not_applicable"
+                        0
                         if model == "B0"
                         else read_json(
                             artifacts

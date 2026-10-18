@@ -268,6 +268,12 @@ def run_final(args) -> None:
     run = args.output / family / f"h{args.horizon}" / run_name
     run.mkdir(parents=True, exist_ok=True)
     metrics = classification_metrics(test_y, probabilities)
+    if args.model == "B0":
+        parameter_count = 0
+    elif args.model == "B1":
+        parameter_count = int(model.coef_.size + model.intercept_.size)
+    else:
+        parameter_count = tree_parameter_count(model)
     report = {
         "model": args.model,
         "horizon": args.horizon,
@@ -276,6 +282,7 @@ def run_final(args) -> None:
         "selection_N_trials": selection_trials,
         "reported_variant_N_trials": 1 if args.feature_set == "shipped144" else 0,
         "selected": selected,
+        "trainable_parameters": parameter_count,
         "compute_hours": (time.perf_counter() - started) / 3600.0,
         "component_metrics_not_for_reporting": metrics,
         "reporting_status": "awaiting_pooled_seed_block_bootstrap",
