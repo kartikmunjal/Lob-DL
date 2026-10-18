@@ -208,12 +208,12 @@ def paired_bootstrap_metric_differences(
     metrics_a = metrics_from_sufficient_sums(sums[:, :width])
     metrics_b = metrics_from_sufficient_sums(sums[:, width:])
     values = {name: metrics_a[name] - metrics_b[name] for name in names}
+    point_a = classification_metrics(y, probabilities_a)
+    point_b = classification_metrics(y, probabilities_b)
     output = {}
     for name, value in values.items():
         samples = np.asarray(value)
-        point_a = classification_metrics(y, probabilities_a)[name]
-        point_b = classification_metrics(y, probabilities_b)[name]
-        point = np.asarray(point_a) - np.asarray(point_b)
+        point = np.asarray(point_a[name]) - np.asarray(point_b[name])
         lower = np.quantile(samples, 0.025, axis=0)
         upper = np.quantile(samples, 0.975, axis=0)
         output[name] = {
