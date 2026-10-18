@@ -14,6 +14,18 @@ STOCHASTIC = {
     "M1_depth5", "M2", "M2_depth1", "M2_depth5",
 }
 M1_ANCHOR = {"learning_rate": 0.01, "epsilon": 1.0, "dropout": 0.0}
+REPORTED_VARIANTS = {
+    "B1_shipped144", "B2_shipped144", "M1_anchor", "M1_refit", "M1_depth1",
+    "M1_depth5", "M2_depth1", "M2_depth5",
+}
+
+
+def trial_metadata(system: tuple[str, str | None]) -> dict:
+    model, _ = system
+    return {
+        "selection_N_trials": 0 if model == "B0" else 12,
+        "reported_variant_N_trials": 1 if model in REPORTED_VARIANTS else 0,
+    }
 
 
 def parse_system(value: str) -> tuple[str, str | None]:
@@ -110,6 +122,8 @@ def main() -> None:
     result = {
         "system_a": args.system_a,
         "system_b": args.system_b,
+        "system_a_N_trials": trial_metadata(system_a),
+        "system_b_N_trials": trial_metadata(system_b),
         "horizon": args.horizon,
         "bootstrap": {
             "type": "paired_moving_block",

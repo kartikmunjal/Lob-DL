@@ -47,8 +47,10 @@ def main() -> None:
                 "study_macro_f1": point,
                 "study_ci95_lower": interval["lower"],
                 "study_ci95_upper": interval["upper"],
-                "difference_percentage_points": 100.0 * point - float(published_percent),
-                "status": "contextual_only_protocols_differ",
+                    "difference_percentage_points": 100.0 * point - float(published_percent),
+                    "selection_N_trials": study["selection_N_trials"],
+                    "reported_variant_N_trials": study["reported_variant_N_trials"],
+                    "status": "contextual_only_protocols_differ",
             }
         )
     result = {

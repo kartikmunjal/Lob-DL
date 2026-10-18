@@ -62,6 +62,14 @@ def main() -> None:
     result = {
         "system_a": args.system_a,
         "system_b": args.system_b,
+        "system_a_N_trials": {
+            "selection_N_trials": 0 if args.system_a.startswith("B0_") else 12,
+            "reported_variant_N_trials": 1 if args.labels == "matched" else 0,
+        },
+        "system_b_N_trials": {
+            "selection_N_trials": 0 if args.system_b.startswith("B0_") else 12,
+            "reported_variant_N_trials": 1 if args.labels == "matched" else 0,
+        },
         "horizon": args.horizon,
         "label_variant": args.labels,
         "bootstrap": {
