@@ -6,10 +6,80 @@ from pathlib import Path
 
 import numpy as np
 
-from lobdl.metrics import bootstrap_metrics, classification_metrics
+from lobdl.metrics import bootstrap_metrics, classification_metrics, moving_block_indices
 
 SEEDS = (11, 23, 47, 91, 137)
 M1_ANCHOR = {"learning_rate": 0.01, "epsilon": 1.0, "dropout": 0.0}
+
+
+def fi_economics(
+    labels: np.ndarray,
+    probabilities: np.ndarray,
+    forward_returns: np.ndarray,
+    relative_spreads: np.ndarray,
+    fee_bps: float,
+) -> dict:
+    prediction = probabilities.argmax(axis=1)
+    selected = (prediction == labels) & np.isin(labels, (0, 2))
+    moves = np.abs(forward_returns[selected]) * 10000.0
+    costs = relative_spreads[selected] * 10000.0 + fee_bps
+    if not len(moves):
+        return {
+            "correct_direction_windows": 0,
+            "mean_absolute_forward_move_bps": float("nan"),
+            "mean_spread_plus_fee_bps": float("nan"),
+            "mean_move_minus_cost_bps": float("nan"),
+            "fraction_move_exceeds_cost": float("nan"),
+        }
+    return {
+        "correct_direction_windows": len(moves),
+        "mean_absolute_forward_move_bps": float(moves.mean()),
+        "mean_spread_plus_fee_bps": float(costs.mean()),
+        "mean_move_minus_cost_bps": float((moves - costs).mean()),
+        "fraction_move_exceeds_cost": float((moves > costs).mean()),
+    }
+
+
+def bootstrap_fi_economics(
+    labels: np.ndarray,
+    probabilities: np.ndarray,
+    groups: np.ndarray,
+    forward_returns: np.ndarray,
+    relative_spreads: np.ndarray,
+    fees: tuple[float, ...],
+    replicates: int,
+    seed: int = 20261018,
+) -> dict:
+    rng = np.random.default_rng(seed)
+    names = (
+        "mean_absolute_forward_move_bps",
+        "mean_spread_plus_fee_bps",
+        "mean_move_minus_cost_bps",
+        "fraction_move_exceeds_cost",
+    )
+    samples = {fee: {name: [] for name in names} for fee in fees}
+    for _ in range(replicates):
+        index = moving_block_indices(groups, 100, rng)
+        for fee in fees:
+            values = fi_economics(
+                labels[index],
+                probabilities[index],
+                forward_returns[index],
+                relative_spreads[index],
+                fee,
+            )
+            for name in names:
+                samples[fee][name].append(values[name])
+    return {
+        str(fee): {
+            name: {
+                "lower": float(np.nanquantile(values, 0.025)),
+                "upper": float(np.nanquantile(values, 0.975)),
+            }
+            for name, values in fee_samples.items()
+        }
+        for fee, fee_samples in samples.items()
+    }
 
 
 def locate_runs(root: Path, model: str, horizon: int, variant: str | None):
@@ -63,6 +133,7 @@ def main() -> None:
     if missing:
         raise FileNotFoundError("missing registered runs:\n" + "\n".join(missing))
     pooled_probabilities, pooled_labels, pooled_groups, seed_scores = [], [], [], []
+    pooled_returns, pooled_spreads = [], []
     reports = []
     for index, run in enumerate(runs):
         prediction = np.load(run / "predictions.npz")
@@ -74,12 +145,33 @@ def main() -> None:
         pooled_probabilities.append(probabilities)
         pooled_labels.append(labels)
         pooled_groups.append(np.column_stack((groups, np.full(len(groups), index + 1))))
+        if "forward_returns" not in prediction or "relative_spreads" not in prediction:
+            raise KeyError(f"registered FI economic arrays are absent: {run / 'predictions.npz'}")
+        pooled_returns.append(prediction["forward_returns"])
+        pooled_spreads.append(prediction["relative_spreads"])
         reports.append(json.loads((run / "report.json").read_text(encoding="utf-8")))
     probabilities = np.concatenate(pooled_probabilities)
     labels = np.concatenate(pooled_labels)
     groups = np.concatenate(pooled_groups)
+    forward_returns = np.concatenate(pooled_returns)
+    relative_spreads = np.concatenate(pooled_spreads)
     point = classification_metrics(labels, probabilities)
     ci = bootstrap_metrics(labels, probabilities, groups, replicates=args.replicates)
+    fees = (0.0, 0.5, 1.0, 2.0)
+    economic_ci = bootstrap_fi_economics(
+        labels,
+        probabilities,
+        groups,
+        forward_returns,
+        relative_spreads,
+        fees,
+        args.replicates,
+    )
+    fee_reports = {}
+    for fee in fees:
+        values = fi_economics(labels, probabilities, forward_returns, relative_spreads, fee)
+        values["ci95"] = economic_ci[str(fee)]
+        fee_reports[str(fee)] = values
     result = {
         "model": args.model, "variant": args.variant, "horizon": args.horizon,
         "class_order": ["down", "stationary", "up"],
@@ -91,6 +183,11 @@ def main() -> None:
         ),
         "N_seeds": len(runs), "seed_macro_f1_sd": float(np.std(seed_scores, ddof=1)) if len(seed_scores) > 1 else 0.0,
         "metrics": point, "ci95": ci,
+        "economics_no_strategy_or_return_claim": {
+            "primary_round_trip_fee_bps": 1.0,
+            "fee_scenarios_bps": fee_reports,
+            "price_basis": "FI_DecPre_relative_ratios",
+        },
         "compute_hours": float(sum(report.get("gpu_hours", report.get("compute_hours", 0.0)) for report in reports)),
         "reportable": True,
     }

@@ -71,3 +71,39 @@ def collate_predictions(loader, model: torch.nn.Module, device: torch.device):
             groups.append(group.numpy())
             ends.append(end.numpy())
     return tuple(np.concatenate(value) for value in (probabilities, labels, groups, ends))
+
+
+def fi_economic_arrays(
+    root: str | Path,
+    days: list[int],
+    horizon: int,
+    purge: int = 0,
+    window: int = 100,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Forward relative moves and contemporaneous relative spreads in window order."""
+    root = Path(root)
+    segments = load_segments(root)
+    horizon_rows = horizon // 10
+    returns, spreads = [], []
+    for day in days:
+        matrix = np.load(root / f"day_{day:02d}.npy", mmap_mode="r")
+        for segment in segments[day]:
+            raw = np.asarray(matrix[segment.start : segment.stop, :40], dtype=np.float64)
+            local = Segment(day, segment.stock, 0, len(raw))
+            ends = np.fromiter(
+                (
+                    end
+                    for _, end in iter_window_indices(
+                        (local,), window, horizon_rows, purge
+                    )
+                ),
+                dtype=np.int64,
+            )
+            mid = (raw[:, 0] + raw[:, 2]) / 2.0
+            cumulative = np.cumsum(np.concatenate(([0.0], mid)))
+            future = (
+                cumulative[ends + horizon_rows + 1] - cumulative[ends + 1]
+            ) / horizon_rows
+            returns.append((future - mid[ends]) / np.maximum(np.abs(mid[ends]), 1e-12))
+            spreads.append((raw[ends, 0] - raw[ends, 2]) / np.maximum(np.abs(mid[ends]), 1e-12))
+    return np.concatenate(returns), np.concatenate(spreads)

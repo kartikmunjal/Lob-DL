@@ -10,6 +10,7 @@ from scripts.generate_report_assets import (
     generate_compute,
     generate_economics,
     generate_fi,
+    generate_fi_economics,
     generate_reliability,
     generate_transfer,
     markdown_summary,
@@ -31,6 +32,14 @@ def summary() -> dict:
         }
         for index in range(1, 16)
     ]
+    economic = {
+        "correct_direction_windows": 10,
+        "mean_absolute_forward_move_bps": 2.0,
+        "mean_spread_plus_fee_bps": 3.0,
+        "mean_move_minus_cost_bps": -1.0,
+        "fraction_move_exceeds_cost": 0.2,
+        "ci95": {"mean_move_minus_cost_bps": {"lower": -2.0, "upper": 0.0}},
+    }
     return {
         "metrics": {"macro_f1": 0.5, "reliability_curve": curve},
         "ci95": {"macro_f1": {"lower": 0.4, "upper": 0.6}},
@@ -39,6 +48,9 @@ def summary() -> dict:
         "reported_variant_N_trials": 0,
         "N_seeds": 5,
         "compute_hours": 1.0,
+        "economics_no_strategy_or_return_claim": {
+            "fee_scenarios_bps": {str(fee): economic for fee in (0.0, 0.5, 1.0, 2.0)}
+        },
     }
 
 
@@ -138,10 +150,11 @@ def test_all_public_assets_generate_from_named_reports(tmp_path):
     transfer = generate_transfer(artifacts, output)
     generate_ablation_table(artifacts, output)
     generate_economics(artifacts, output)
+    generate_fi_economics(artifacts, output)
     generate_reliability(artifacts, output)
     generate_compute(artifacts, output)
     generate_audits(artifacts, output)
     markdown_summary(fi, transfer, output)
     assert (output / "RESULTS.md").exists()
-    assert len(list((output / "figures").glob("*.png"))) == 6
-    assert len(list((output / "tables").glob("*.csv"))) == 8
+    assert len(list((output / "figures").glob("*.png"))) == 7
+    assert len(list((output / "tables").glob("*.csv"))) == 9

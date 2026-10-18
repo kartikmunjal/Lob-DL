@@ -202,6 +202,60 @@ def generate_economics(artifacts: Path, output: Path) -> list[dict]:
     return rows
 
 
+def generate_fi_economics(artifacts: Path, output: Path) -> list[dict]:
+    rows = []
+    for system, model, variant in PRIMARY_SYSTEMS:
+        for horizon in HORIZONS:
+            report = fi_summary(artifacts, model, horizon, variant)
+            scenarios = report["economics_no_strategy_or_return_claim"]["fee_scenarios_bps"]
+            for fee, values in scenarios.items():
+                rows.append(
+                    {
+                        "system": system,
+                        "horizon": horizon,
+                        "round_trip_fee_bps": fee,
+                        "correct_direction_windows": values["correct_direction_windows"],
+                        "mean_absolute_forward_move_bps": values[
+                            "mean_absolute_forward_move_bps"
+                        ],
+                        "mean_spread_plus_fee_bps": values["mean_spread_plus_fee_bps"],
+                        "mean_move_minus_cost_bps": values["mean_move_minus_cost_bps"],
+                        "fraction_move_exceeds_cost": values["fraction_move_exceeds_cost"],
+                        "move_minus_cost_ci95_lower": values["ci95"][
+                            "mean_move_minus_cost_bps"
+                        ]["lower"],
+                        "move_minus_cost_ci95_upper": values["ci95"][
+                            "mean_move_minus_cost_bps"
+                        ]["upper"],
+                        "selection_N_trials": report["selection_N_trials"],
+                        "reported_variant_N_trials": report["reported_variant_N_trials"],
+                    }
+                )
+    write_csv(output / "tables" / "fi_economic_significance.csv", rows)
+    primary = [row for row in rows if row["round_trip_fee_bps"] == "1.0"]
+    fig, axis = plt.subplots(figsize=(9, 5.5))
+    for system in ("B1 logistic", "B2 LightGBM", "M1 DeepLOB", "M2 transformer"):
+        values = [row for row in primary if row["system"] == system]
+        axis.plot(
+            [row["horizon"] for row in values],
+            [row["mean_move_minus_cost_bps"] for row in values],
+            marker="o",
+            label=system,
+        )
+    axis.axhline(0.0, color="black", linewidth=1)
+    axis.set(
+        xlabel="Horizon",
+        ylabel="Mean absolute move minus spread and 1 bp (bp)",
+        title="FI-2010 descriptive economic significance; no strategy claim",
+    )
+    axis.grid(alpha=0.25)
+    axis.legend()
+    fig.tight_layout()
+    fig.savefig(output / "figures" / "fi_inside_spread_primary_fee.png", dpi=180)
+    plt.close(fig)
+    return rows
+
+
 def generate_reliability(artifacts: Path, output: Path) -> None:
     fig, axes = plt.subplots(2, 2, figsize=(10, 9), sharex=True, sharey=True)
     for axis, horizon in zip(axes.flat, HORIZONS, strict=True):
@@ -364,11 +418,12 @@ def main() -> None:
     transfer_rows = generate_transfer(args.artifacts, args.output)
     generate_ablation_table(args.artifacts, args.output)
     generate_economics(args.artifacts, args.output)
+    generate_fi_economics(args.artifacts, args.output)
     generate_reliability(args.artifacts, args.output)
     generate_compute(args.artifacts, args.output)
     generate_audits(args.artifacts, args.output)
     markdown_summary(fi_rows, transfer_rows, args.output)
-    print(json.dumps({"output": str(args.output), "figures": 6, "tables": 8}, indent=2))
+    print(json.dumps({"output": str(args.output), "figures": 7, "tables": 9}, indent=2))
 
 
 if __name__ == "__main__":

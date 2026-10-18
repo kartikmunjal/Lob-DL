@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from lobdl.datasets import collate_predictions
+from lobdl.datasets import collate_predictions, fi_economic_arrays
 from lobdl.metrics import classification_metrics
 from lobdl.models import count_parameters
 from lobdl.neural import (
@@ -112,6 +112,11 @@ def main() -> None:
         train, validation, test, args.seed, args.batch_size, args.workers
     )
     probabilities, labels, groups, ends = collate_predictions(test_loader, model, device)
+    forward_returns, relative_spreads = fi_economic_arrays(
+        args.data, [8, 9, 10], args.horizon, purge=200
+    )
+    if len(forward_returns) != len(labels):
+        raise AssertionError("FI economic arrays are not aligned with neural predictions")
     metrics = classification_metrics(labels, probabilities)
     run.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
@@ -120,6 +125,8 @@ def main() -> None:
         labels=labels,
         groups=groups,
         ends=ends,
+        forward_returns=forward_returns,
+        relative_spreads=relative_spreads,
     )
     report = {
         "model": args.model,

@@ -8,7 +8,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from lobdl.datasets import FIWindowDataset, collate_predictions
+from lobdl.datasets import FIWindowDataset, collate_predictions, fi_economic_arrays
 from lobdl.metrics import classification_metrics
 from lobdl.models import count_parameters
 from lobdl.neural import build_model, build_optimizer_and_scheduler, make_test_dataset
@@ -95,12 +95,17 @@ def main() -> None:
         persistent_workers=args.workers > 0,
     )
     probabilities, labels, groups, ends = collate_predictions(test_loader, model, device)
+    forward_returns, relative_spreads = fi_economic_arrays(
+        args.data, [8, 9, 10], args.horizon, purge=200
+    )
     np.savez_compressed(
         run / "predictions.npz",
         probabilities=probabilities,
         labels=labels,
         groups=groups,
         ends=ends,
+        forward_returns=forward_returns,
+        relative_spreads=relative_spreads,
     )
     report = {
         "model": "M1",

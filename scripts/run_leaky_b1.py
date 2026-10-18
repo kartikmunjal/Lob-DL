@@ -7,10 +7,11 @@ from pathlib import Path
 
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from train_baselines import assemble, fit_model
 
+from lobdl.datasets import fi_economic_arrays
 from lobdl.metrics import classification_metrics
 from lobdl.selection_lock import selection_path, verify_lock
+from train_baselines import assemble, fit_model
 
 
 def main() -> None:
@@ -52,12 +53,17 @@ def main() -> None:
     model = fit_model("B1", selection["selected"]["parameters"])
     model.fit(scaler.transform(train_x), train_y)
     probabilities = model.predict_proba(scaler.transform(test_x))
+    forward_returns, relative_spreads = fi_economic_arrays(
+        args.data, [8, 9, 10], args.horizon, purge=200
+    )
     run.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
         run / "predictions.npz",
         probabilities=probabilities,
         labels=test_y,
         groups=test_groups,
+        forward_returns=forward_returns,
+        relative_spreads=relative_spreads,
     )
     report = {
         "model": "B1",

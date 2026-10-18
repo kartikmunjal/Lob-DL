@@ -13,7 +13,7 @@ from sklearn.metrics import f1_score
 from sklearn.preprocessing import StandardScaler
 
 from lobdl.data.fi2010 import HORIZONS, LABEL_TO_INDEX, Segment, iter_window_indices
-from lobdl.datasets import load_segments
+from lobdl.datasets import fi_economic_arrays, load_segments
 from lobdl.features import causal_features
 from lobdl.metrics import classification_metrics
 from lobdl.search import (
@@ -291,6 +291,11 @@ def run_final(args) -> None:
         run_name = "deterministic" if args.model == "B1" else f"seed{args.seed}"
     run.mkdir(parents=True, exist_ok=True)
     metrics = classification_metrics(test_y, probabilities)
+    forward_returns, relative_spreads = fi_economic_arrays(
+        args.data, [8, 9, 10], args.horizon, purge=200
+    )
+    if len(forward_returns) != len(test_y):
+        raise AssertionError("FI economic arrays are not aligned with test predictions")
     if args.model == "B0":
         parameter_count = 0
     elif args.model == "B1":
@@ -315,6 +320,8 @@ def run_final(args) -> None:
         probabilities=probabilities,
         labels=test_y,
         groups=test_groups,
+        forward_returns=forward_returns,
+        relative_spreads=relative_spreads,
     )
     if args.model != "B0":
         with (run / "model.pkl").open("wb") as handle:
