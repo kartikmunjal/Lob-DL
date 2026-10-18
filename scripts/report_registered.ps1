@@ -1,4 +1,5 @@
 param(
+  [Parameter(Mandatory=$true)][string]$DataRoot,
   [string]$Python = "python",
   [string]$Artifacts = "artifacts",
   [int]$Replicates = 2000
@@ -44,3 +45,6 @@ foreach ($horizon in $horizons) {
     }
   }
 }
+
+Invoke-RegisteredPython scripts/mechanism_analysis.py --data $DataRoot `
+  --artifacts $Artifacts --replicates $Replicates

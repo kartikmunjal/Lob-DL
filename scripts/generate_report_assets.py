@@ -281,6 +281,79 @@ def generate_reliability(artifacts: Path, output: Path) -> None:
     plt.close(fig)
 
 
+def generate_mechanisms(artifacts: Path, output: Path) -> list[dict]:
+    comparisons = (("B2", "B1"), ("M1", "B2"), ("M2", "M1"))
+    states = ("relative_spread", "volume_imbalance_10", "realized_volatility_50")
+    rows = []
+    for model_a, model_b in comparisons:
+        for horizon in HORIZONS:
+            report = read_json(
+                artifacts
+                / "reports"
+                / "mechanisms"
+                / f"h{horizon}"
+                / f"{model_a}_minus_{model_b}.json"
+            )
+            for item in report["rows"]:
+                interval = item["ci95"] or {"lower": None, "upper": None}
+                rows.append(
+                    {
+                        "comparison": f"{model_a}_minus_{model_b}",
+                        "horizon": horizon,
+                        "state": item["state"],
+                        "state_bin": item["bin"],
+                        "true_class": item["true_class"],
+                        "pooled_seed_windows": item["windows"],
+                        "mean_correctness_difference": item[
+                            "mean_correctness_difference"
+                        ],
+                        "ci95_lower": interval["lower"],
+                        "ci95_upper": interval["upper"],
+                        "system_a_selection_N_trials": report["system_a_N_trials"][
+                            "selection_N_trials"
+                        ],
+                        "system_b_selection_N_trials": report["system_b_N_trials"][
+                            "selection_N_trials"
+                        ],
+                        "bootstrap_replicates": report["bootstrap"]["replicates"],
+                    }
+                )
+    write_csv(output / "tables" / "fi_mechanical_explanation.csv", rows)
+
+    figure, axes = plt.subplots(3, 3, figsize=(14, 11), sharex=True, sharey=True)
+    for row_index, state in enumerate(states):
+        for column_index, (model_a, model_b) in enumerate(comparisons):
+            axis = axes[row_index, column_index]
+            comparison = f"{model_a}_minus_{model_b}"
+            for horizon in HORIZONS:
+                selected = [
+                    row
+                    for row in rows
+                    if row["comparison"] == comparison
+                    and row["horizon"] == horizon
+                    and row["state"] == state
+                    and row["true_class"] == "all"
+                ]
+                axis.plot(
+                    [row["state_bin"] for row in selected],
+                    [row["mean_correctness_difference"] for row in selected],
+                    marker="o",
+                    label=f"h={horizon}",
+                )
+            axis.axhline(0.0, color="black", linewidth=0.8)
+            axis.grid(alpha=0.2)
+            axis.set_title(f"{comparison}; {state}", fontsize=9)
+            axis.set_xticks((1, 2, 3, 4))
+    axes[0, 0].legend(fontsize=7)
+    figure.supxlabel("Train-defined state quartile bin")
+    figure.supylabel("Paired correctness difference")
+    figure.suptitle("FI-2010 registered mechanical explanation strata (all classes)")
+    figure.tight_layout()
+    figure.savefig(output / "figures" / "fi_mechanical_explanation.png", dpi=180)
+    plt.close(figure)
+    return rows
+
+
 def generate_compute(artifacts: Path, output: Path) -> list[dict]:
     rows = []
     for system, model, variant in PRIMARY_SYSTEMS:
@@ -371,7 +444,9 @@ def generate_audits(artifacts: Path, output: Path) -> None:
     plt.close(fig)
 
 
-def markdown_summary(fi_rows: list[dict], transfer_rows: list[dict], output: Path) -> None:
+def markdown_summary(
+    fi_rows: list[dict], transfer_rows: list[dict], mechanism_rows: list[dict], output: Path
+) -> None:
     lines = [
         "# Generated results summary",
         "",
@@ -404,6 +479,21 @@ def markdown_summary(fi_rows: list[dict], transfer_rows: list[dict], output: Pat
             f"{row['ci95_upper']:.4f}] | {row['selection_N_trials']}+"
             f"{row['reported_variant_N_trials']} | {row['N_seeds']} |"
         )
+    lines.extend(
+        [
+            "",
+            "## Mechanical explanation",
+            "",
+            (
+                "The complete preregistered paired-correctness strata, including every true class, "
+                "are in `tables/fi_mechanical_explanation.csv`. The figure shows the all-class "
+                "strata using quartile boundaries fitted only on FI-2010 days 1–6. These are "
+                "descriptive diagnostics, not selection criteria or replacement performance metrics."
+            ),
+            "",
+            f"Rows reported: {len(mechanism_rows)}.",
+        ]
+    )
     (output / "RESULTS.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -420,10 +510,11 @@ def main() -> None:
     generate_economics(args.artifacts, args.output)
     generate_fi_economics(args.artifacts, args.output)
     generate_reliability(args.artifacts, args.output)
+    mechanism_rows = generate_mechanisms(args.artifacts, args.output)
     generate_compute(args.artifacts, args.output)
     generate_audits(args.artifacts, args.output)
-    markdown_summary(fi_rows, transfer_rows, args.output)
-    print(json.dumps({"output": str(args.output), "figures": 7, "tables": 9}, indent=2))
+    markdown_summary(fi_rows, transfer_rows, mechanism_rows, args.output)
+    print(json.dumps({"output": str(args.output), "figures": 8, "tables": 10}, indent=2))
 
 
 if __name__ == "__main__":

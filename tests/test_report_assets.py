@@ -11,6 +11,7 @@ from scripts.generate_report_assets import (
     generate_economics,
     generate_fi,
     generate_fi_economics,
+    generate_mechanisms,
     generate_reliability,
     generate_transfer,
     markdown_summary,
@@ -145,6 +146,39 @@ def test_all_public_assets_generate_from_named_reports(tmp_path):
         artifacts / "audit" / "lobster" / "lobster_all.json",
         {"tickers": {ticker: ticker_audit for ticker in ("AAPL", "AMZN")}},
     )
+    for model_a, model_b in (("B2", "B1"), ("M1", "B2"), ("M2", "M1")):
+        for horizon in HORIZONS:
+            mechanism_rows = []
+            for state in (
+                "relative_spread",
+                "volume_imbalance_10",
+                "realized_volatility_50",
+            ):
+                for state_bin in range(1, 5):
+                    for true_class in ("all", "down", "stationary", "up"):
+                        mechanism_rows.append(
+                            {
+                                "state": state,
+                                "bin": state_bin,
+                                "true_class": true_class,
+                                "windows": 10,
+                                "mean_correctness_difference": 0.01,
+                                "ci95": {"lower": -0.01, "upper": 0.03},
+                            }
+                        )
+            write(
+                artifacts
+                / "reports"
+                / "mechanisms"
+                / f"h{horizon}"
+                / f"{model_a}_minus_{model_b}.json",
+                {
+                    "system_a_N_trials": {"selection_N_trials": 12},
+                    "system_b_N_trials": {"selection_N_trials": 12},
+                    "bootstrap": {"replicates": 2000},
+                    "rows": mechanism_rows,
+                },
+            )
     (output / "figures").mkdir(parents=True)
     fi = generate_fi(artifacts, output)
     transfer = generate_transfer(artifacts, output)
@@ -152,9 +186,10 @@ def test_all_public_assets_generate_from_named_reports(tmp_path):
     generate_economics(artifacts, output)
     generate_fi_economics(artifacts, output)
     generate_reliability(artifacts, output)
+    mechanisms = generate_mechanisms(artifacts, output)
     generate_compute(artifacts, output)
     generate_audits(artifacts, output)
-    markdown_summary(fi, transfer, output)
+    markdown_summary(fi, transfer, mechanisms, output)
     assert (output / "RESULTS.md").exists()
-    assert len(list((output / "figures").glob("*.png"))) == 7
-    assert len(list((output / "tables").glob("*.csv"))) == 9
+    assert len(list((output / "figures").glob("*.png"))) == 8
+    assert len(list((output / "tables").glob("*.csv"))) == 10
