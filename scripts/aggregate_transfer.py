@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from lobdl.metrics import bootstrap_metrics, classification_metrics, moving_block_indices
+from lobdl.metrics import bootstrap_metrics, bootstrap_sufficient_sums, classification_metrics
 from lobdl.search import FINAL_SEEDS
 
 STOCHASTIC = {"B2", "M1", "M2"}
@@ -61,27 +61,46 @@ def bootstrap_economics_scenarios(
     replicates: int,
     seed: int = 20261017,
 ) -> dict[str, dict]:
-    rng = np.random.default_rng(seed)
-    names = (
-        "mean_absolute_forward_move",
-        "mean_spread_plus_fee",
-        "mean_move_minus_cost",
-        "fraction_move_exceeds_cost",
-    )
-    samples = {fee: {name: [] for name in names} for fee in fee_scenarios}
-    for _ in range(replicates):
-        index = moving_block_indices(groups, 100, rng)
-        for fee_bps in fee_scenarios:
-            result = economics(
-                labels[index],
-                probabilities[index],
-                forward_returns[index],
-                mid[index],
-                spread[index],
-                fee_bps,
+    prediction = probabilities.argmax(axis=1)
+    selected = ((prediction == labels) & np.isin(labels, (0, 2))).astype(np.float64)
+    move = np.abs(forward_returns) * mid
+    columns = []
+    for fee_bps in fee_scenarios:
+        cost = spread + fee_bps * mid / 10000.0
+        columns.extend(
+            (
+                selected,
+                selected * move,
+                selected * cost,
+                selected * (move - cost),
+                selected * (move > cost),
             )
-            for name in names:
-                samples[fee_bps][name].append(result[name])
+        )
+    sums = bootstrap_sufficient_sums(
+        np.column_stack(columns), groups, replicates, 100, seed
+    )
+    samples = {}
+    for fee_index, fee_bps in enumerate(fee_scenarios):
+        count, move_sum, cost_sum, difference, exceeds = (
+            sums[:, fee_index * 5 + offset] for offset in range(5)
+        )
+        samples[fee_bps] = {
+            "mean_absolute_forward_move": np.divide(
+                move_sum, count, out=np.full_like(move_sum, np.nan), where=count != 0
+            ),
+            "mean_spread_plus_fee": np.divide(
+                cost_sum, count, out=np.full_like(cost_sum, np.nan), where=count != 0
+            ),
+            "mean_move_minus_cost": np.divide(
+                difference,
+                count,
+                out=np.full_like(difference, np.nan),
+                where=count != 0,
+            ),
+            "fraction_move_exceeds_cost": np.divide(
+                exceeds, count, out=np.full_like(exceeds, np.nan), where=count != 0
+            ),
+        }
     return {
         str(fee): {
             name: {

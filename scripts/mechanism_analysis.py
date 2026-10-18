@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 
 from lobdl.datasets import fi_state_arrays
-from lobdl.metrics import moving_block_indices
+from lobdl.metrics import bootstrap_sufficient_sums
 from lobdl.search import FINAL_SEEDS
 
 COMPARISONS = (("B2", "B1"), ("M1", "B2"), ("M2", "M1"))
@@ -45,17 +45,20 @@ def paired_correctness(
     return np.concatenate(differences), np.concatenate(labels_all), np.concatenate(groups_all)
 
 
-def interval_for_mask(
+def interval_for_statistics(
     difference: np.ndarray,
     mask: np.ndarray,
-    sampled_indices: list[np.ndarray],
+    sampled_count: np.ndarray,
+    sampled_difference: np.ndarray,
 ) -> dict:
     if not mask.any():
         return {"windows": 0, "mean_correctness_difference": None, "ci95": None}
-    values = []
-    for index in sampled_indices:
-        selected = index[mask[index]]
-        values.append(float(difference[selected].mean()) if len(selected) else np.nan)
+    values = np.divide(
+        sampled_difference,
+        sampled_count,
+        out=np.full_like(sampled_difference, np.nan),
+        where=sampled_count != 0,
+    )
     return {
         "windows": int(mask.sum()),
         "mean_correctness_difference": float(difference[mask].mean()),
@@ -88,37 +91,49 @@ def main() -> None:
             states = {name: np.tile(values, repeats) for name, values in test_states.items()}
             if any(len(values) != len(labels) for values in states.values()):
                 raise AssertionError("mechanism states are not aligned with predictions")
-            # Reset to the registered primary-analysis seed so each fixed comparison
-            # at a horizon uses identical bootstrap blocks.
-            rng = np.random.default_rng(20261013)
-            sampled = [moving_block_indices(groups, 100, rng) for _ in range(args.replicates)]
-            rows = []
+            row_definitions = []
+            statistic_columns = []
             for name, values in states.items():
                 bins = np.digitize(values, thresholds[name], right=True)
                 for bin_index in range(4):
                     state_mask = bins == bin_index
-                    row = {
-                        "state": name,
-                        "bin": bin_index + 1,
-                        "train_quantile_boundaries": thresholds[name],
-                        "true_class": "all",
-                        **interval_for_mask(difference, state_mask, sampled),
-                    }
-                    rows.append(row)
-                    for class_index, class_name in enumerate(CLASS_NAMES):
-                        rows.append(
+                    for class_index, class_name in ((None, "all"), *enumerate(CLASS_NAMES)):
+                        mask = (
+                            state_mask
+                            if class_index is None
+                            else state_mask & (labels == class_index)
+                        )
+                        row_definitions.append(
                             {
                                 "state": name,
                                 "bin": bin_index + 1,
                                 "train_quantile_boundaries": thresholds[name],
                                 "true_class": class_name,
-                                **interval_for_mask(
-                                    difference,
-                                    state_mask & (labels == class_index),
-                                    sampled,
-                                ),
+                                "mask": mask,
                             }
                         )
+                        statistic_columns.extend((mask, mask * difference))
+            sampled = bootstrap_sufficient_sums(
+                np.column_stack(statistic_columns).astype(np.int8),
+                groups,
+                args.replicates,
+                100,
+                20261013,
+            )
+            rows = []
+            for index, definition in enumerate(row_definitions):
+                mask = definition.pop("mask")
+                rows.append(
+                    {
+                        **definition,
+                        **interval_for_statistics(
+                            difference,
+                            mask,
+                            sampled[:, index * 2],
+                            sampled[:, index * 2 + 1],
+                        ),
+                    }
+                )
             result = {
                 "system_a": model_a,
                 "system_b": model_b,
