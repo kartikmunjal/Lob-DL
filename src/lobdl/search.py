@@ -1,12 +1,30 @@
 from __future__ import annotations
 
 import itertools
+import json
 from collections.abc import Iterable
+from pathlib import Path
 
 import numpy as np
 
 SELECTION_SEEDS = (5, 7, 13)
 FINAL_SEEDS = (11, 23, 47, 91, 137)
+
+
+def load_progress(path: Path, model: str, horizon: int) -> dict:
+    if not path.exists():
+        return {"model": model, "horizon": horizon, "completed_fits": {}}
+    progress = json.loads(path.read_text(encoding="utf-8"))
+    if progress.get("model") != model or progress.get("horizon") != horizon:
+        raise ValueError(f"progress metadata mismatch in {path}")
+    return progress
+
+
+def save_progress(path: Path, progress: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(".tmp")
+    temporary.write_text(json.dumps(progress, indent=2) + "\n", encoding="utf-8")
+    temporary.replace(path)
 
 
 def candidate_grid(model: str) -> list[dict[str, float | int]]:

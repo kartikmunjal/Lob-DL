@@ -19,6 +19,8 @@ from lobdl.search import (
     FINAL_SEEDS,
     SELECTION_SEEDS,
     candidate_grid,
+    load_progress,
+    save_progress,
     select_candidate,
     summarize_candidate,
 )
@@ -139,12 +141,27 @@ def run_selection(args) -> None:
         train_x = scaler.transform(train_x)
         validation_x = scaler.transform(validation_x)
     candidates = []
+    progress_path = (
+        args.output / "selection_runs" / args.model / f"h{args.horizon}" / "progress.json"
+    )
+    progress = load_progress(progress_path, args.model, args.horizon)
     for trial, parameters in enumerate(candidate_grid(args.model), start=1):
         seeds = (None,) if args.model == "B1" else SELECTION_SEEDS
         scores = []
         best_iterations = []
         parameter_counts = []
         for seed in seeds:
+            seed_name = "deterministic" if seed is None else str(seed)
+            key = f"trial{trial:02d}_seed{seed_name}"
+            if key in progress["completed_fits"]:
+                completed = progress["completed_fits"][key]
+                if completed["parameters"] != parameters:
+                    raise ValueError(f"registered parameters changed for {key}")
+                scores.append(completed["validation_macro_f1"])
+                if completed["best_iteration"] is not None:
+                    best_iterations.append(completed["best_iteration"])
+                    parameter_counts.append(completed["parameter_count"])
+                continue
             model = fit_model(args.model, parameters, seed)
             fit_with_validation(model, train_x, train_y, validation_x, validation_y)
             scores.append(
@@ -153,6 +170,13 @@ def run_selection(args) -> None:
             if isinstance(model, lgb.LGBMClassifier):
                 best_iterations.append(int(model.best_iteration_))
                 parameter_counts.append(tree_parameter_count(model))
+            progress["completed_fits"][key] = {
+                "parameters": parameters,
+                "validation_macro_f1": scores[-1],
+                "best_iteration": best_iterations[-1] if best_iterations else None,
+                "parameter_count": parameter_counts[-1] if parameter_counts else None,
+            }
+            save_progress(progress_path, progress)
         candidates.append(
             summarize_candidate(
                 trial,

@@ -13,7 +13,14 @@ from lobdl.neural import (
     make_loaders,
     make_train_validation_datasets,
 )
-from lobdl.search import SELECTION_SEEDS, candidate_grid, select_candidate, summarize_candidate
+from lobdl.search import (
+    SELECTION_SEEDS,
+    candidate_grid,
+    load_progress,
+    save_progress,
+    select_candidate,
+    summarize_candidate,
+)
 from lobdl.selection_lock import assert_not_frozen, verify_presearch_timing
 from lobdl.training import fit_classifier, seed_everything
 
@@ -41,9 +48,20 @@ def main() -> None:
     train, validation = make_train_validation_datasets(args.data, args.horizon)
     candidates = []
     search_root = args.output / "selection_runs" / args.model / f"h{args.horizon}"
+    progress_path = search_root / "progress.json"
+    progress = load_progress(progress_path, args.model, args.horizon)
     for trial, parameters in enumerate(candidate_grid(args.model), start=1):
         scores, best_epochs, parameter_counts = [], [], []
         for seed in SELECTION_SEEDS:
+            key = f"trial{trial:02d}_seed{seed}"
+            if key in progress["completed_fits"]:
+                completed = progress["completed_fits"][key]
+                if completed["parameters"] != parameters:
+                    raise ValueError(f"registered parameters changed for {key}")
+                scores.append(completed["validation_macro_f1"])
+                best_epochs.append(completed["best_epoch"])
+                parameter_counts.append(completed["parameter_count"])
+                continue
             seed_everything(seed)
             train_loader, validation_loader, _ = make_loaders(
                 train,
@@ -78,6 +96,13 @@ def main() -> None:
             scores.append(fit.best_macro_f1)
             best_epochs.append(fit.best_epoch)
             checkpoint.unlink(missing_ok=True)
+            progress["completed_fits"][key] = {
+                "parameters": parameters,
+                "validation_macro_f1": fit.best_macro_f1,
+                "best_epoch": fit.best_epoch,
+                "parameter_count": parameter_counts[-1],
+            }
+            save_progress(progress_path, progress)
         candidates.append(
             summarize_candidate(
                 trial,
