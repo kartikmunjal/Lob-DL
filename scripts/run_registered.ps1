@@ -1,7 +1,8 @@
 param(
   [Parameter(Mandatory=$true)][string]$DataRoot,
   [string]$Python = "python",
-  [string]$Artifacts = "artifacts"
+  [string]$Artifacts = "artifacts",
+  [ValidateSet("select", "final", "all")][string]$Stage = "all"
 )
 $ErrorActionPreference = "Stop"
 $seeds = @(11, 23, 47, 91, 137)
@@ -11,22 +12,28 @@ if (-not (Test-Path "reports/phase1_timing.json")) {
   throw "Commit the registered Phase 1 timing report before starting search."
 }
 
-# Stage 1: validation-only searches. No script in this stage constructs test data.
-foreach ($horizon in $horizons) {
-  foreach ($model in @("B1", "B2")) {
-    & $Python scripts/train_baselines.py --data $DataRoot --model $model `
-      --horizon $horizon --phase select --output $Artifacts
-  }
-}
-foreach ($model in @("M1", "M2")) {
+if ($Stage -in @("select", "all")) {
+  # Stage 1: validation-only searches. No script here constructs test data.
   foreach ($horizon in $horizons) {
-    & $Python scripts/select_neural.py --data $DataRoot --model $model `
-      --horizon $horizon --output $Artifacts
+    foreach ($model in @("B1", "B2")) {
+      & $Python scripts/train_baselines.py --data $DataRoot --model $model `
+        --horizon $horizon --phase select --output $Artifacts
+    }
   }
+  foreach ($model in @("M1", "M2")) {
+    foreach ($horizon in $horizons) {
+      & $Python scripts/select_neural.py --data $DataRoot --model $model `
+        --horizon $horizon --output $Artifacts
+    }
+  }
+
+  # Final scripts reject an absent lock or any subsequent selection-file change.
+  & $Python scripts/freeze_selections.py --artifacts $Artifacts
 }
 
-# This hashes all 16 selection reports. Final scripts reject absent or changed locks.
-& $Python scripts/freeze_selections.py --artifacts $Artifacts
+if ($Stage -eq "select") {
+  return
+}
 
 # Stage 2: untouched test evaluation after every configuration is frozen.
 foreach ($horizon in $horizons) {
