@@ -1,0 +1,39 @@
+{
+  "analysis": "LOBSTER_reconstructed_book_exact_window_sensitivity",
+  "primary_t1_input": "vendor_book",
+  "eligibility_rule": "all_top10_cells_exact_for_entire_window",
+  "window": 100,
+  "audit_sha256": "71258156b30cd5b421a4c2254b312037bde7ff76e90b4843d4101eefe73e225d",
+  "tickers": [
+    {
+      "ticker": "AAPL",
+      "eligible_exact_100_row_windows": 0,
+      "status": "not_estimable_zero_eligible_windows"
+    },
+    {
+      "ticker": "AMZN",
+      "eligible_exact_100_row_windows": 0,
+      "status": "not_estimable_zero_eligible_windows"
+    },
+    {
+      "ticker": "GOOG",
+      "eligible_exact_100_row_windows": 0,
+      "status": "not_estimable_zero_eligible_windows"
+    },
+    {
+      "ticker": "INTC",
+      "eligible_exact_100_row_windows": 0,
+      "status": "not_estimable_zero_eligible_windows"
+    },
+    {
+      "ticker": "MSFT",
+      "eligible_exact_100_row_windows": 0,
+      "status": "not_estimable_zero_eligible_windows"
+    }
+  ],
+  "total_eligible_windows": 0,
+  "result_status": "not_estimable_without_relaxing_preregistered_rule",
+  "metrics": null,
+  "selection_N_trials": 0,
+  "reported_variant_N_trials": 1
+}

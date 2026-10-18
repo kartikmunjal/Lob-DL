@@ -1,0 +1,1053 @@
+{
+  "protocol": "pure_replay_from_first_vendor_snapshot_no_reseeding",
+  "primary_t1_input": "vendor_book",
+  "reconstructed_sensitivity_rule": "all_top10_cells_exact_for_entire_window",
+  "window": 100,
+  "tickers": {
+    "AAPL": {
+      "initialization": "first_vendor_snapshot_after_message_1_once",
+      "replayed_message_range": "2_through_end",
+      "reseeded": false,
+      "initialization_row_exact_by_definition": true,
+      "replayed_messages": 400390,
+      "exact_match_rates": {
+        "level_1": 0.007877319613376958,
+        "top_5": 0.003956142760808212,
+        "top_10": 0.00029721022003546544
+      },
+      "first_top_10_mismatch": {
+        "message_index": 13,
+        "seconds_since_midnight": 34200.201780978
+      },
+      "time_bins": [
+        {
+          "minutes_since_open_start": 0,
+          "minutes_since_open_end": 30,
+          "rows": 35090,
+          "level_1_exact_rate": 0.08988315759475635,
+          "top_5_exact_rate": 0.045141065830721,
+          "top_10_exact_rate": 0.003391279566828156
+        },
+        {
+          "minutes_since_open_start": 30,
+          "minutes_since_open_end": 60,
+          "rows": 37837,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 60,
+          "minutes_since_open_end": 90,
+          "rows": 28074,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 90,
+          "minutes_since_open_end": 120,
+          "rows": 32678,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 120,
+          "minutes_since_open_end": 150,
+          "rows": 26199,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 150,
+          "minutes_since_open_end": 180,
+          "rows": 27809,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 180,
+          "minutes_since_open_end": 210,
+          "rows": 20898,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 210,
+          "minutes_since_open_end": 240,
+          "rows": 20769,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 240,
+          "minutes_since_open_end": 270,
+          "rows": 26005,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 270,
+          "minutes_since_open_end": 300,
+          "rows": 26155,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 300,
+          "minutes_since_open_end": 330,
+          "rows": 25788,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 330,
+          "minutes_since_open_end": 360,
+          "rows": 37326,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 360,
+          "minutes_since_open_end": 390,
+          "rows": 55762,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        }
+      ],
+      "total_absolute_size_error_by_level": [
+        {
+          "level": 1,
+          "bid": 62802503,
+          "ask": 36937731
+        },
+        {
+          "level": 2,
+          "bid": 55470272,
+          "ask": 44692923
+        },
+        {
+          "level": 3,
+          "bid": 51634981,
+          "ask": 39858684
+        },
+        {
+          "level": 4,
+          "bid": 115514729,
+          "ask": 61378726
+        },
+        {
+          "level": 5,
+          "bid": 59639362,
+          "ask": 46965169
+        },
+        {
+          "level": 6,
+          "bid": 49448871,
+          "ask": 47487637
+        },
+        {
+          "level": 7,
+          "bid": 85633002,
+          "ask": 48933849
+        },
+        {
+          "level": 8,
+          "bid": 156717357,
+          "ask": 52730743
+        },
+        {
+          "level": 9,
+          "bid": 57401536,
+          "ask": 56529377
+        },
+        {
+          "level": 10,
+          "bid": 68751874,
+          "ask": 62533264
+        }
+      ],
+      "event_counts": {
+        "absent_level_skips": 3780,
+        "additions": 191014,
+        "attributed_events": 189662,
+        "crossed_or_locked_states": 395919,
+        "hidden_executions": 11332,
+        "replayed_messages": 400390,
+        "unattributed_applied_events": 5417,
+        "zero_clamps": 1643,
+        "cross_trades": 0,
+        "halt_indicators": 0
+      },
+      "event_fractions_of_replayed_messages": {
+        "attributed_events": 0.47369314917954997,
+        "unattributed_applied_events": 0.013529308923799296,
+        "zero_clamps": 0.004103499088388821,
+        "absent_level_skips": 0.00944079522465596,
+        "hidden_executions": 0.0283024051549739,
+        "cross_trades": 0.0,
+        "halt_indicators": 0.0
+      },
+      "invariant_diagnostics": {
+        "crossed_or_locked_states": 395919,
+        "fraction_of_replayed_messages": 0.9888333874472389,
+        "first_crossed_or_locked": {
+          "message_index": 2111,
+          "seconds_since_midnight": 34288.725310169
+        },
+        "repair_or_reseed_applied": false
+      },
+      "ticker": "AAPL",
+      "message_sha256": "6562394b996138d5c4527b1282e77a1a385e844110550c34628fbd73bc5411e5",
+      "vendor_book_sha256": "ed75450031996e81bdc5fc985f6afe6851c81d7b2b39bccf13c56d845fe6ff5d",
+      "exact_mask_rows_including_initialization": 400391,
+      "eligible_exact_windows": 0
+    },
+    "AMZN": {
+      "initialization": "first_vendor_snapshot_after_message_1_once",
+      "replayed_message_range": "2_through_end",
+      "reseeded": false,
+      "initialization_row_exact_by_definition": true,
+      "replayed_messages": 269747,
+      "exact_match_rates": {
+        "level_1": 0.020704586149243552,
+        "top_5": 0.006291080160298354,
+        "top_10": 0.0003929608114270038
+      },
+      "first_top_10_mismatch": {
+        "message_index": 45,
+        "seconds_since_midnight": 34200.39141294
+      },
+      "time_bins": [
+        {
+          "minutes_since_open_start": 0,
+          "minutes_since_open_end": 30,
+          "rows": 17519,
+          "level_1_exact_rate": 0.3187967349734574,
+          "top_5_exact_rate": 0.0968662594896969,
+          "top_10_exact_rate": 0.006050573662880301
+        },
+        {
+          "minutes_since_open_start": 30,
+          "minutes_since_open_end": 60,
+          "rows": 24960,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 60,
+          "minutes_since_open_end": 90,
+          "rows": 24502,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 90,
+          "minutes_since_open_end": 120,
+          "rows": 25401,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 120,
+          "minutes_since_open_end": 150,
+          "rows": 17374,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 150,
+          "minutes_since_open_end": 180,
+          "rows": 18784,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 180,
+          "minutes_since_open_end": 210,
+          "rows": 14255,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 210,
+          "minutes_since_open_end": 240,
+          "rows": 12441,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 240,
+          "minutes_since_open_end": 270,
+          "rows": 20101,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 270,
+          "minutes_since_open_end": 300,
+          "rows": 19595,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 300,
+          "minutes_since_open_end": 330,
+          "rows": 15215,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 330,
+          "minutes_since_open_end": 360,
+          "rows": 26082,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 360,
+          "minutes_since_open_end": 390,
+          "rows": 33518,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        }
+      ],
+      "total_absolute_size_error_by_level": [
+        {
+          "level": 1,
+          "bid": 46362199,
+          "ask": 28144061
+        },
+        {
+          "level": 2,
+          "bid": 29278465,
+          "ask": 28331703
+        },
+        {
+          "level": 3,
+          "bid": 34047616,
+          "ask": 28840682
+        },
+        {
+          "level": 4,
+          "bid": 28033075,
+          "ask": 27804412
+        },
+        {
+          "level": 5,
+          "bid": 28249633,
+          "ask": 51403088
+        },
+        {
+          "level": 6,
+          "bid": 34226437,
+          "ask": 50003502
+        },
+        {
+          "level": 7,
+          "bid": 33461800,
+          "ask": 49185733
+        },
+        {
+          "level": 8,
+          "bid": 49888623,
+          "ask": 45084369
+        },
+        {
+          "level": 9,
+          "bid": 36358215,
+          "ask": 45147947
+        },
+        {
+          "level": 10,
+          "bid": 35240771,
+          "ask": 59327161
+        }
+      ],
+      "event_counts": {
+        "absent_level_skips": 1993,
+        "additions": 131954,
+        "attributed_events": 128667,
+        "crossed_or_locked_states": 259204,
+        "hidden_executions": 2444,
+        "replayed_messages": 269747,
+        "unattributed_applied_events": 5310,
+        "zero_clamps": 841,
+        "cross_trades": 0,
+        "halt_indicators": 0
+      },
+      "event_fractions_of_replayed_messages": {
+        "attributed_events": 0.4769914030554557,
+        "unattributed_applied_events": 0.019685112346013115,
+        "zero_clamps": 0.003117736249151983,
+        "absent_level_skips": 0.00738840469032093,
+        "hidden_executions": 0.009060341727618843,
+        "cross_trades": 0.0,
+        "halt_indicators": 0.0
+      },
+      "invariant_diagnostics": {
+        "crossed_or_locked_states": 259204,
+        "fraction_of_replayed_messages": 0.9609152279728783,
+        "first_crossed_or_locked": {
+          "message_index": 1442,
+          "seconds_since_midnight": 34451.344014838
+        },
+        "repair_or_reseed_applied": false
+      },
+      "ticker": "AMZN",
+      "message_sha256": "c85a75b51f3616a683f825c2e03f984535e9329a8be5ab12325130d32223a2c5",
+      "vendor_book_sha256": "decfe952b3fa06c9922dc8fba763a37a0fb032d4231767997e4abf2aa0d29b50",
+      "exact_mask_rows_including_initialization": 269748,
+      "eligible_exact_windows": 0
+    },
+    "GOOG": {
+      "initialization": "first_vendor_snapshot_after_message_1_once",
+      "replayed_message_range": "2_through_end",
+      "reseeded": false,
+      "initialization_row_exact_by_definition": true,
+      "replayed_messages": 147915,
+      "exact_match_rates": {
+        "level_1": 0.05214481289930027,
+        "top_5": 0.005232735016732583,
+        "top_10": 0.0006490213974241964
+      },
+      "first_top_10_mismatch": {
+        "message_index": 65,
+        "seconds_since_midnight": 34201.44557354
+      },
+      "time_bins": [
+        {
+          "minutes_since_open_start": 0,
+          "minutes_since_open_end": 30,
+          "rows": 12647,
+          "level_1_exact_rate": 0.6086819008460504,
+          "top_5_exact_rate": 0.06120028465248675,
+          "top_10_exact_rate": 0.007590732980153396
+        },
+        {
+          "minutes_since_open_start": 30,
+          "minutes_since_open_end": 60,
+          "rows": 15755,
+          "level_1_exact_rate": 0.000952078705172961,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 60,
+          "minutes_since_open_end": 90,
+          "rows": 13998,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 90,
+          "minutes_since_open_end": 120,
+          "rows": 11870,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 120,
+          "minutes_since_open_end": 150,
+          "rows": 8703,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 150,
+          "minutes_since_open_end": 180,
+          "rows": 9092,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 180,
+          "minutes_since_open_end": 210,
+          "rows": 8845,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 210,
+          "minutes_since_open_end": 240,
+          "rows": 8191,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 240,
+          "minutes_since_open_end": 270,
+          "rows": 10946,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 270,
+          "minutes_since_open_end": 300,
+          "rows": 9560,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 300,
+          "minutes_since_open_end": 330,
+          "rows": 10438,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 330,
+          "minutes_since_open_end": 360,
+          "rows": 11479,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 360,
+          "minutes_since_open_end": 390,
+          "rows": 16391,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        }
+      ],
+      "total_absolute_size_error_by_level": [
+        {
+          "level": 1,
+          "bid": 20374013,
+          "ask": 7342985
+        },
+        {
+          "level": 2,
+          "bid": 14246155,
+          "ask": 8456659
+        },
+        {
+          "level": 3,
+          "bid": 19221024,
+          "ask": 9401318
+        },
+        {
+          "level": 4,
+          "bid": 11964037,
+          "ask": 9010432
+        },
+        {
+          "level": 5,
+          "bid": 11231173,
+          "ask": 10246543
+        },
+        {
+          "level": 6,
+          "bid": 10817206,
+          "ask": 9277574
+        },
+        {
+          "level": 7,
+          "bid": 10593740,
+          "ask": 9751094
+        },
+        {
+          "level": 8,
+          "bid": 11095565,
+          "ask": 11735867
+        },
+        {
+          "level": 9,
+          "bid": 17212424,
+          "ask": 11174740
+        },
+        {
+          "level": 10,
+          "bid": 10825885,
+          "ask": 12717049
+        }
+      ],
+      "event_counts": {
+        "absent_level_skips": 2022,
+        "additions": 71258,
+        "attributed_events": 69382,
+        "crossed_or_locked_states": 134420,
+        "hidden_executions": 3913,
+        "replayed_messages": 147915,
+        "unattributed_applied_events": 1666,
+        "zero_clamps": 524,
+        "cross_trades": 0,
+        "halt_indicators": 0
+      },
+      "event_fractions_of_replayed_messages": {
+        "attributed_events": 0.4690666937092249,
+        "unattributed_applied_events": 0.011263225501132406,
+        "zero_clamps": 0.0035425751276070717,
+        "absent_level_skips": 0.013670013183247134,
+        "hidden_executions": 0.0264543825845925,
+        "cross_trades": 0.0,
+        "halt_indicators": 0.0
+      },
+      "invariant_diagnostics": {
+        "crossed_or_locked_states": 134420,
+        "fraction_of_replayed_messages": 0.9087651691850049,
+        "first_crossed_or_locked": {
+          "message_index": 6570,
+          "seconds_since_midnight": 34908.771063998
+        },
+        "repair_or_reseed_applied": false
+      },
+      "ticker": "GOOG",
+      "message_sha256": "6767177b0fd926ef9674185af9356828c30e2d4fb45b3cfed637d1c64e8eba19",
+      "vendor_book_sha256": "9ebe00b4f1aee57aa73dcb979e1074d16554296ca32b87440ce756c60974bb53",
+      "exact_mask_rows_including_initialization": 147916,
+      "eligible_exact_windows": 0
+    },
+    "INTC": {
+      "initialization": "first_vendor_snapshot_after_message_1_once",
+      "replayed_message_range": "2_through_end",
+      "reseeded": false,
+      "initialization_row_exact_by_definition": true,
+      "replayed_messages": 624039,
+      "exact_match_rates": {
+        "level_1": 0.023554617579990993,
+        "top_5": 0.0046166986358224405,
+        "top_10": 0.00013941436352535658
+      },
+      "first_top_10_mismatch": {
+        "message_index": 5,
+        "seconds_since_midnight": 34200.048863815
+      },
+      "time_bins": [
+        {
+          "minutes_since_open_start": 0,
+          "minutes_since_open_end": 30,
+          "rows": 84888,
+          "level_1_exact_rate": 0.1731575723306003,
+          "top_5_exact_rate": 0.0339388370558854,
+          "top_10_exact_rate": 0.0010248798416737349
+        },
+        {
+          "minutes_since_open_start": 30,
+          "minutes_since_open_end": 60,
+          "rows": 52928,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 60,
+          "minutes_since_open_end": 90,
+          "rows": 36576,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 90,
+          "minutes_since_open_end": 120,
+          "rows": 50587,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 120,
+          "minutes_since_open_end": 150,
+          "rows": 41154,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 150,
+          "minutes_since_open_end": 180,
+          "rows": 50080,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 180,
+          "minutes_since_open_end": 210,
+          "rows": 43031,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 210,
+          "minutes_since_open_end": 240,
+          "rows": 33499,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 240,
+          "minutes_since_open_end": 270,
+          "rows": 37974,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 270,
+          "minutes_since_open_end": 300,
+          "rows": 22798,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 300,
+          "minutes_since_open_end": 330,
+          "rows": 39314,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 330,
+          "minutes_since_open_end": 360,
+          "rows": 50219,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 360,
+          "minutes_since_open_end": 390,
+          "rows": 80991,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        }
+      ],
+      "total_absolute_size_error_by_level": [
+        {
+          "level": 1,
+          "bid": 10102081699,
+          "ask": 684956298
+        },
+        {
+          "level": 2,
+          "bid": 11007364005,
+          "ask": 872425111
+        },
+        {
+          "level": 3,
+          "bid": 10503024837,
+          "ask": 819167100
+        },
+        {
+          "level": 4,
+          "bid": 10168871764,
+          "ask": 907458895
+        },
+        {
+          "level": 5,
+          "bid": 8209558440,
+          "ask": 835746549
+        },
+        {
+          "level": 6,
+          "bid": 7338458327,
+          "ask": 919870893
+        },
+        {
+          "level": 7,
+          "bid": 7522209671,
+          "ask": 1009199494
+        },
+        {
+          "level": 8,
+          "bid": 5393815181,
+          "ask": 1210247313
+        },
+        {
+          "level": 9,
+          "bid": 5018873572,
+          "ask": 1604060571
+        },
+        {
+          "level": 10,
+          "bid": 4807965712,
+          "ask": 1903085348
+        }
+      ],
+      "event_counts": {
+        "absent_level_skips": 1131,
+        "additions": 304790,
+        "attributed_events": 313815,
+        "crossed_or_locked_states": 602053,
+        "hidden_executions": 3559,
+        "replayed_messages": 624039,
+        "unattributed_applied_events": 1681,
+        "zero_clamps": 202,
+        "cross_trades": 0,
+        "halt_indicators": 0
+      },
+      "event_fractions_of_replayed_messages": {
+        "attributed_events": 0.5028772240196526,
+        "unattributed_applied_events": 0.00269374189754166,
+        "zero_clamps": 0.0003236977176105981,
+        "absent_level_skips": 0.0018123867258296356,
+        "hidden_executions": 0.0057031691929510814,
+        "cross_trades": 0.0,
+        "halt_indicators": 0.0
+      },
+      "invariant_diagnostics": {
+        "crossed_or_locked_states": 602053,
+        "fraction_of_replayed_messages": 0.9647682276267989,
+        "first_crossed_or_locked": {
+          "message_index": 7826,
+          "seconds_since_midnight": 34260.011560811
+        },
+        "repair_or_reseed_applied": false
+      },
+      "ticker": "INTC",
+      "message_sha256": "199c55b35f6c62f07b058922038c0b8d168bc3be9d2de94da19c901cd3f29927",
+      "vendor_book_sha256": "6bc4c4dc1e92d78e46d04f9e7914df2d8c2a9231928493e7395a9085e1fc91ab",
+      "exact_mask_rows_including_initialization": 624040,
+      "eligible_exact_windows": 0
+    },
+    "MSFT": {
+      "initialization": "first_vendor_snapshot_after_message_1_once",
+      "replayed_message_range": "2_through_end",
+      "reseeded": false,
+      "initialization_row_exact_by_definition": true,
+      "replayed_messages": 668764,
+      "exact_match_rates": {
+        "level_1": 0.019198102768689704,
+        "top_5": 0.0042780412821264305,
+        "top_10": 0.00037382394985376006
+      },
+      "first_top_10_mismatch": {
+        "message_index": 8,
+        "seconds_since_midnight": 34200.016793836
+      },
+      "time_bins": [
+        {
+          "minutes_since_open_start": 0,
+          "minutes_since_open_end": 30,
+          "rows": 62194,
+          "level_1_exact_rate": 0.2064347043123131,
+          "top_5_exact_rate": 0.046001221982827925,
+          "top_10_exact_rate": 0.004019680355018169
+        },
+        {
+          "minutes_since_open_start": 30,
+          "minutes_since_open_end": 60,
+          "rows": 70980,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 60,
+          "minutes_since_open_end": 90,
+          "rows": 45099,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 90,
+          "minutes_since_open_end": 120,
+          "rows": 61159,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 120,
+          "minutes_since_open_end": 150,
+          "rows": 42325,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 150,
+          "minutes_since_open_end": 180,
+          "rows": 48234,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 180,
+          "minutes_since_open_end": 210,
+          "rows": 40329,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 210,
+          "minutes_since_open_end": 240,
+          "rows": 36052,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 240,
+          "minutes_since_open_end": 270,
+          "rows": 37052,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 270,
+          "minutes_since_open_end": 300,
+          "rows": 38873,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 300,
+          "minutes_since_open_end": 330,
+          "rows": 30923,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 330,
+          "minutes_since_open_end": 360,
+          "rows": 60273,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        },
+        {
+          "minutes_since_open_start": 360,
+          "minutes_since_open_end": 390,
+          "rows": 95271,
+          "level_1_exact_rate": 0.0,
+          "top_5_exact_rate": 0.0,
+          "top_10_exact_rate": 0.0
+        }
+      ],
+      "total_absolute_size_error_by_level": [
+        {
+          "level": 1,
+          "bid": 8400015367,
+          "ask": 2018439624
+        },
+        {
+          "level": 2,
+          "bid": 10960191177,
+          "ask": 2121292590
+        },
+        {
+          "level": 3,
+          "bid": 11277250038,
+          "ask": 2155433233
+        },
+        {
+          "level": 4,
+          "bid": 11449200548,
+          "ask": 2137020895
+        },
+        {
+          "level": 5,
+          "bid": 10653779682,
+          "ask": 2327991192
+        },
+        {
+          "level": 6,
+          "bid": 8934975963,
+          "ask": 2234132571
+        },
+        {
+          "level": 7,
+          "bid": 6996024844,
+          "ask": 2835059894
+        },
+        {
+          "level": 8,
+          "bid": 7730996252,
+          "ask": 3431464274
+        },
+        {
+          "level": 9,
+          "bid": 4631349052,
+          "ask": 4371159382
+        },
+        {
+          "level": 10,
+          "bid": 3694295447,
+          "ask": 4821955021
+        }
+      ],
+      "event_counts": {
+        "absent_level_skips": 466,
+        "additions": 329566,
+        "attributed_events": 333722,
+        "crossed_or_locked_states": 652298,
+        "hidden_executions": 3616,
+        "replayed_messages": 668764,
+        "unattributed_applied_events": 1773,
+        "zero_clamps": 96,
+        "cross_trades": 0,
+        "halt_indicators": 0
+      },
+      "event_fractions_of_replayed_messages": {
+        "attributed_events": 0.4990131047723861,
+        "unattributed_applied_events": 0.0026511594523628665,
+        "zero_clamps": 0.00014354839674384388,
+        "absent_level_skips": 0.0006968078425274088,
+        "hidden_executions": 0.005406989610684786,
+        "cross_trades": 0.0,
+        "halt_indicators": 0.0
+      },
+      "invariant_diagnostics": {
+        "crossed_or_locked_states": 652298,
+        "fraction_of_replayed_messages": 0.975378459366832,
+        "first_crossed_or_locked": {
+          "message_index": 4893,
+          "seconds_since_midnight": 34303.190089067
+        },
+        "repair_or_reseed_applied": false
+      },
+      "ticker": "MSFT",
+      "message_sha256": "669e5c35b1eab0f7336fa9ed919002e65b08d2aabd96bb4ae88d647184e7a18d",
+      "vendor_book_sha256": "ec2f53467cf7bfb00b5702381bea7b4a061bb4c1730454df3679b272b3561c0e",
+      "exact_mask_rows_including_initialization": 668765,
+      "eligible_exact_windows": 0
+    }
+  }
+}
