@@ -1,0 +1,28 @@
+deeplob_setup_2:
+  source:
+    title: DeepLOB - Deep Convolutional Neural Networks for Limit Order Books
+    authors: [Zihao Zhang, Stefan Zohren, Stephen Roberts]
+    arxiv: "1808.03668"
+    url: https://arxiv.org/abs/1808.03668
+  metric: reported_F1_percent
+  horizons:
+    10: 83.40
+    20: 72.82
+    50: 80.35
+    100: null
+  comparison_variant: M1_anchor
+  comparability: contextual_anchor_not_exact_reproduction
+  registered_protocol_differences:
+    paper_batch_size: 32
+    study_batch_size: 64
+    paper_normalization: z_score
+    study_normalization: decimal_precision
+    paper_validation_metric: accuracy
+    study_validation_metric: macro_f1
+    paper_patience: 20
+    study_patience: 5
+    paper_approximate_epochs: 100
+    study_max_epochs: 40
+    paper_approximate_parameters: 60000
+    released_pytorch_and_study_parameters: 143907
+    study_split: days_1_to_6_train_day_7_validation_days_8_to_10_test
