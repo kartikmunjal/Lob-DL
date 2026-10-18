@@ -4,6 +4,7 @@ param(
   [int]$Replicates = 2000
 )
 $ErrorActionPreference = "Stop"
+Set-Location (Resolve-Path (Join-Path $PSScriptRoot ".."))
 $horizons = @(10, 20, 50, 100)
 $systems = @(
   "B0:majority",

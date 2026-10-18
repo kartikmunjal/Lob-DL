@@ -5,6 +5,7 @@ param(
   [ValidateSet("select", "final", "all")][string]$Stage = "all"
 )
 $ErrorActionPreference = "Stop"
+Set-Location (Resolve-Path (Join-Path $PSScriptRoot ".."))
 $seeds = @(11, 23, 47, 91, 137)
 $horizons = @(10, 20, 50, 100)
 
