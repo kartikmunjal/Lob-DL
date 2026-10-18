@@ -9,6 +9,13 @@ Set-Location (Resolve-Path (Join-Path $PSScriptRoot ".."))
 $seeds = @(11, 23, 47, 91, 137)
 $horizons = @(10, 20, 50, 100)
 
+function Invoke-RegisteredPython {
+  & $Python @args
+  if ($LASTEXITCODE -ne 0) {
+    throw "Registered Python command failed with exit code $LASTEXITCODE: $Python $args"
+  }
+}
+
 if (-not (Test-Path "reports/phase1_timing.json")) {
   throw "Commit the registered Phase 1 timing report before starting search."
 }
@@ -17,19 +24,19 @@ if ($Stage -in @("select", "all")) {
   # Stage 1: validation-only searches. No script here constructs test data.
   foreach ($horizon in $horizons) {
     foreach ($model in @("B1", "B2")) {
-      & $Python scripts/train_baselines.py --data $DataRoot --model $model `
+      Invoke-RegisteredPython scripts/train_baselines.py --data $DataRoot --model $model `
         --horizon $horizon --phase select --output $Artifacts
     }
   }
   foreach ($model in @("M1", "M2")) {
     foreach ($horizon in $horizons) {
-      & $Python scripts/select_neural.py --data $DataRoot --model $model `
+      Invoke-RegisteredPython scripts/select_neural.py --data $DataRoot --model $model `
         --horizon $horizon --output $Artifacts
     }
   }
 
   # Final scripts reject an absent lock or any subsequent selection-file change.
-  & $Python scripts/freeze_selections.py --artifacts $Artifacts
+  Invoke-RegisteredPython scripts/freeze_selections.py --artifacts $Artifacts
 }
 
 if ($Stage -eq "select") {
@@ -39,17 +46,17 @@ if ($Stage -eq "select") {
 # Stage 2: untouched test evaluation after every configuration is frozen.
 foreach ($horizon in $horizons) {
   foreach ($rule in @("majority", "persistence")) {
-    & $Python scripts/train_baselines.py --data $DataRoot --model B0 `
+    Invoke-RegisteredPython scripts/train_baselines.py --data $DataRoot --model B0 `
       --horizon $horizon --phase final --rule $rule --output $Artifacts
   }
-  & $Python scripts/train_baselines.py --data $DataRoot --model B1 `
+  Invoke-RegisteredPython scripts/train_baselines.py --data $DataRoot --model B1 `
     --horizon $horizon --phase final --output $Artifacts
-  & $Python scripts/train_baselines.py --data $DataRoot --model B1 `
+  Invoke-RegisteredPython scripts/train_baselines.py --data $DataRoot --model B1 `
     --feature-set shipped144 --horizon $horizon --phase final --output $Artifacts
   foreach ($seed in $seeds) {
-    & $Python scripts/train_baselines.py --data $DataRoot --model B2 `
+    Invoke-RegisteredPython scripts/train_baselines.py --data $DataRoot --model B2 `
       --horizon $horizon --phase final --seed $seed --output $Artifacts
-    & $Python scripts/train_baselines.py --data $DataRoot --model B2 `
+    Invoke-RegisteredPython scripts/train_baselines.py --data $DataRoot --model B2 `
       --feature-set shipped144 --horizon $horizon --phase final `
       --seed $seed --output $Artifacts
   }
@@ -58,7 +65,7 @@ foreach ($horizon in $horizons) {
 foreach ($model in @("M1", "M2")) {
   foreach ($horizon in $horizons) {
     foreach ($seed in $seeds) {
-      & $Python scripts/train_neural.py --data $DataRoot --model $model `
+      Invoke-RegisteredPython scripts/train_neural.py --data $DataRoot --model $model `
         --horizon $horizon --seed $seed --output $Artifacts
     }
   }
@@ -72,7 +79,7 @@ foreach ($horizon in $horizons) {
     ($selected.epsilon -eq 1.0) -and ($selected.dropout -eq 0.0)
   if (-not $anchorWon) {
     foreach ($seed in $seeds) {
-      & $Python scripts/train_neural.py --data $DataRoot --model M1 `
+      Invoke-RegisteredPython scripts/train_neural.py --data $DataRoot --model M1 `
         --variant anchor --horizon $horizon --seed $seed --output $Artifacts
     }
   }
