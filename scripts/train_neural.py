@@ -29,7 +29,9 @@ def main() -> None:
     parser.add_argument("--model", choices=("M1", "M2"), required=True)
     parser.add_argument("--horizon", type=int, choices=(10, 20, 50, 100), required=True)
     parser.add_argument("--seed", type=int, choices=FINAL_SEEDS, required=True)
-    parser.add_argument("--variant", choices=("selected", "anchor"), default="selected")
+    parser.add_argument(
+        "--variant", choices=("selected", "anchor", "depth1", "depth5"), default="selected"
+    )
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--output", type=Path, default=Path("artifacts"))
@@ -38,6 +40,7 @@ def main() -> None:
     args = parser.parse_args()
     if args.variant == "anchor" and args.model != "M1":
         parser.error("the preregistered paper-optimizer anchor applies only to M1")
+    depth = int(args.variant.removeprefix("depth")) if args.variant.startswith("depth") else 10
     if not torch.cuda.is_available():
         raise SystemExit("CUDA is required for registered neural runs")
 
@@ -54,12 +57,17 @@ def main() -> None:
 
     seed_everything(args.seed)
     device = torch.device("cuda")
-    train, validation = make_train_validation_datasets(args.data, args.horizon)
+    train, validation = make_train_validation_datasets(args.data, args.horizon, depth)
     train_loader, validation_loader, _ = make_loaders(
         train, validation, None, args.seed, args.batch_size, args.workers
     )
-    model = build_model(args.model, parameters).to(device)
-    family = args.model if args.variant == "selected" else "M1_anchor"
+    model = build_model(args.model, parameters, depth).to(device)
+    if args.variant == "selected":
+        family = args.model
+    elif args.variant == "anchor":
+        family = "M1_anchor"
+    else:
+        family = f"{args.model}_{args.variant}"
     run = args.output / family / f"h{args.horizon}" / f"seed{args.seed}"
     checkpoint = run / "checkpoint.pt"
     optimizer, scheduler, clip = build_optimizer_and_scheduler(
@@ -82,7 +90,7 @@ def main() -> None:
 
     # Test construction happens only after the validation-selected checkpoint
     # is fixed and the global selection lock has been verified.
-    test = make_test_dataset(args.data, args.horizon)
+    test = make_test_dataset(args.data, args.horizon, depth)
     _, _, test_loader = make_loaders(
         train, validation, test, args.seed, args.batch_size, args.workers
     )
@@ -99,10 +107,11 @@ def main() -> None:
     report = {
         "model": args.model,
         "variant": args.variant,
+        "book_depth": depth,
         "horizon": args.horizon,
         "seed": args.seed,
         "selection_N_trials": selection["selection_N_trials"],
-        "reported_variant_N_trials": 1 if args.variant == "anchor" else 0,
+        "reported_variant_N_trials": 0 if args.variant == "selected" else 1,
         "selection_conditional_on_seeds": selection["selection_seeds"],
         "parameters": parameters,
         "trainable_parameters": count_parameters(model),

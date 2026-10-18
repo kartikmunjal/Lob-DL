@@ -23,7 +23,10 @@ def locate_runs(root: Path, model: str, horizon: int, variant: str | None):
         if selection["selected"]["parameters"] != M1_ANCHOR:
             raise FileNotFoundError("M1 anchor runs are absent and the anchor did not win")
         base = root / "M1" / f"h{horizon}"
-    if model in ("M1", "M1_anchor", "M2", "B2", "B2_shipped144"):
+    if model in (
+        "M1", "M1_anchor", "M1_refit", "M1_depth1", "M1_depth5",
+        "M2", "M2_depth1", "M2_depth5", "B2", "B2_shipped144",
+    ):
         return [base / f"seed{seed}" for seed in SEEDS]
     return [base / (variant or "deterministic")]
 
@@ -37,11 +40,17 @@ def main() -> None:
             "B0",
             "B1",
             "B1_shipped144",
+            "B1_leaky",
             "B2",
             "B2_shipped144",
             "M1",
             "M1_anchor",
+            "M1_refit",
+            "M1_depth1",
+            "M1_depth5",
             "M2",
+            "M2_depth1",
+            "M2_depth5",
         ),
         required=True,
     )

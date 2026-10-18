@@ -94,3 +94,49 @@ def fit_classifier(
     elapsed = (time.perf_counter() - started) / 3600.0
     output.with_suffix(".history.json").write_text(json.dumps(history, indent=2) + "\n", encoding="utf-8")
     return FitResult(best_epoch, best_score, elapsed, history)
+
+
+def fit_fixed_epochs(
+    model: nn.Module,
+    train_loader,
+    optimizer: torch.optim.Optimizer,
+    device: torch.device,
+    output: Path,
+    epochs: int,
+    clip: float | None = None,
+    scheduler=None,
+) -> FitResult:
+    """Fit an amendment-locked epoch count without validation or further stopping."""
+    if epochs <= 0:
+        raise ValueError("fixed epoch count must be positive")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    criterion = nn.CrossEntropyLoss()
+    scaler = torch.amp.GradScaler("cuda", enabled=device.type == "cuda")
+    history = []
+    started = time.perf_counter()
+    for epoch in range(1, epochs + 1):
+        model.train()
+        loss_sum = 0.0
+        examples = 0
+        for x, y, _, _ in train_loader:
+            x, y = x.to(device, non_blocking=True), y.to(device, non_blocking=True)
+            optimizer.zero_grad(set_to_none=True)
+            with torch.amp.autocast("cuda", enabled=device.type == "cuda"):
+                loss = criterion(model(x), y)
+            scaler.scale(loss).backward()
+            if clip is not None:
+                scaler.unscale_(optimizer)
+                nn.utils.clip_grad_norm_(model.parameters(), clip)
+            scaler.step(optimizer)
+            scaler.update()
+            if scheduler is not None:
+                scheduler.step()
+            loss_sum += float(loss.detach()) * len(y)
+            examples += len(y)
+        history.append({"epoch": epoch, "train_loss": loss_sum / examples})
+    elapsed = (time.perf_counter() - started) / 3600.0
+    torch.save({"model": model.state_dict(), "epoch": epochs}, output)
+    output.with_suffix(".history.json").write_text(
+        json.dumps(history, indent=2) + "\n", encoding="utf-8"
+    )
+    return FitResult(epochs, float("nan"), elapsed, history)

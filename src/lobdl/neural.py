@@ -12,12 +12,14 @@ from .models import DeepLOB, TransformerLOB
 M1_ANCHOR = {"learning_rate": 1e-2, "epsilon": 1.0, "dropout": 0.0}
 
 
-def build_model(model_name: str, parameters: dict) -> torch.nn.Module:
+def build_model(model_name: str, parameters: dict, levels: int = 10) -> torch.nn.Module:
     if model_name == "M1":
-        return DeepLOB(dropout=float(parameters["dropout"]))
+        return DeepLOB(dropout=float(parameters["dropout"]), levels=levels)
     if model_name == "M2":
         return TransformerLOB(
-            layers=int(parameters["layers"]), dropout=float(parameters["dropout"])
+            features=levels * 4,
+            layers=int(parameters["layers"]),
+            dropout=float(parameters["dropout"]),
         )
     raise ValueError(f"unsupported neural model {model_name}")
 
@@ -55,16 +57,16 @@ def build_optimizer_and_scheduler(
     return optimizer, scheduler, 1.0
 
 
-def make_train_validation_datasets(data: Path, horizon: int):
+def make_train_validation_datasets(data: Path, horizon: int, levels: int = 10):
     """Construct only development data; test is deliberately unavailable here."""
     return (
-        FIWindowDataset(data, list(range(1, 7)), horizon),
-        FIWindowDataset(data, [7], horizon, purge=200),
+        FIWindowDataset(data, list(range(1, 7)), horizon, levels=levels),
+        FIWindowDataset(data, [7], horizon, purge=200, levels=levels),
     )
 
 
-def make_test_dataset(data: Path, horizon: int):
-    return FIWindowDataset(data, [8, 9, 10], horizon, purge=200)
+def make_test_dataset(data: Path, horizon: int, levels: int = 10):
+    return FIWindowDataset(data, [8, 9, 10], horizon, purge=200, levels=levels)
 
 
 def make_loaders(

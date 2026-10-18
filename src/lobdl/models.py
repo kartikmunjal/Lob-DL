@@ -9,8 +9,10 @@ from torch import nn
 class DeepLOB(nn.Module):
     """CNN/Inception/LSTM architecture matching the authors' released layout."""
 
-    def __init__(self, classes: int = 3, dropout: float = 0.0) -> None:
+    def __init__(self, classes: int = 3, dropout: float = 0.0, levels: int = 10) -> None:
         super().__init__()
+        if levels not in (1, 5, 10):
+            raise ValueError("levels must be one of 1, 5, or 10")
         self.conv1 = nn.Sequential(
             nn.Conv2d(1, 32, (1, 2), stride=(1, 2)), nn.LeakyReLU(0.01), nn.BatchNorm2d(32),
             nn.Conv2d(32, 32, (4, 1)), nn.LeakyReLU(0.01), nn.BatchNorm2d(32),
@@ -22,7 +24,7 @@ class DeepLOB(nn.Module):
             nn.Conv2d(32, 32, (4, 1)), nn.Tanh(), nn.BatchNorm2d(32),
         )
         self.conv3 = nn.Sequential(
-            nn.Conv2d(32, 32, (1, 10)), nn.LeakyReLU(0.01), nn.BatchNorm2d(32),
+            nn.Conv2d(32, 32, (1, levels)), nn.LeakyReLU(0.01), nn.BatchNorm2d(32),
             nn.Conv2d(32, 32, (4, 1)), nn.LeakyReLU(0.01), nn.BatchNorm2d(32),
             nn.Conv2d(32, 32, (4, 1)), nn.LeakyReLU(0.01), nn.BatchNorm2d(32),
         )

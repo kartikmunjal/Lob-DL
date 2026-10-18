@@ -9,7 +9,10 @@ import numpy as np
 from lobdl.metrics import paired_bootstrap_metric_differences
 
 SEEDS = (11, 23, 47, 91, 137)
-STOCHASTIC = {"B2", "B2_shipped144", "M1", "M1_anchor", "M2"}
+STOCHASTIC = {
+    "B2", "B2_shipped144", "M1", "M1_anchor", "M1_refit", "M1_depth1",
+    "M1_depth5", "M2", "M2_depth1", "M2_depth5",
+}
 M1_ANCHOR = {"learning_rate": 0.01, "epsilon": 1.0, "dropout": 0.0}
 
 
@@ -25,7 +28,12 @@ def parse_system(value: str) -> tuple[str, str | None]:
         "B2_shipped144",
         "M1",
         "M1_anchor",
+        "M1_refit",
+        "M1_depth1",
+        "M1_depth5",
         "M2",
+        "M2_depth1",
+        "M2_depth5",
     }:
         raise ValueError(f"unsupported system {value}")
     return model, variant or None

@@ -21,11 +21,22 @@ def load_segments(root: Path) -> dict[int, tuple[Segment, ...]]:
 class FIWindowDataset(Dataset):
     """Lazy, segment-safe windows over memory-mapped day arrays."""
 
-    def __init__(self, root: str | Path, days: list[int], horizon: int, window: int = 100, purge: int = 0):
+    def __init__(
+        self,
+        root: str | Path,
+        days: list[int],
+        horizon: int,
+        window: int = 100,
+        purge: int = 0,
+        levels: int = 10,
+    ):
         self.root = Path(root)
         self.days = days
         self.horizon = horizon
         self.window = window
+        if levels not in (1, 5, 10):
+            raise ValueError("levels must be one of 1, 5, or 10")
+        self.feature_count = levels * 4
         self.arrays = {day: np.load(self.root / f"day_{day:02d}.npy", mmap_mode="r") for day in days}
         segments = load_segments(self.root)
         horizon_rows = horizon // 10
@@ -40,7 +51,10 @@ class FIWindowDataset(Dataset):
     def __getitem__(self, item: int):
         day, stock, end = self.index[item]
         array = self.arrays[day]
-        x = np.asarray(array[end - self.window + 1 : end + 1, :40], dtype=np.float32).copy()
+        x = np.asarray(
+            array[end - self.window + 1 : end + 1, : self.feature_count],
+            dtype=np.float32,
+        ).copy()
         shipped = int(array[end, 144 + self.label_column])
         y = LABEL_TO_INDEX[shipped]
         return torch.from_numpy(x), y, torch.tensor((day, stock), dtype=torch.int16), end
@@ -57,4 +71,3 @@ def collate_predictions(loader, model: torch.nn.Module, device: torch.device):
             groups.append(group.numpy())
             ends.append(end.numpy())
     return tuple(np.concatenate(value) for value in (probabilities, labels, groups, ends))
-
