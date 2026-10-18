@@ -10,15 +10,10 @@ $logRoot = Join-Path $repo "$Artifacts/logs"
 New-Item -ItemType Directory -Path $logRoot -Force | Out-Null
 $stdout = Join-Path $logRoot "$Stage.stdout.log"
 $stderr = Join-Path $logRoot "$Stage.stderr.log"
-$arguments = @(
-  "-NoProfile",
-  "-ExecutionPolicy", "Bypass",
-  "-File", (Join-Path $PSScriptRoot "run_registered.ps1"),
-  "-DataRoot", $DataRoot,
-  "-Python", $Python,
-  "-Artifacts", $Artifacts,
-  "-Stage", $Stage
-)
+$runner = Join-Path $PSScriptRoot "run_registered.ps1"
+$arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$runner`" " +
+  "-DataRoot `"$DataRoot`" -Python `"$Python`" " +
+  "-Artifacts `"$Artifacts`" -Stage `"$Stage`""
 $process = Start-Process powershell.exe -ArgumentList $arguments `
   -WorkingDirectory $repo -RedirectStandardOutput $stdout `
   -RedirectStandardError $stderr -PassThru
