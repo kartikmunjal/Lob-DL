@@ -50,17 +50,17 @@ def economics(
     }
 
 
-def bootstrap_economics(
+def bootstrap_economics_scenarios(
     labels: np.ndarray,
     probabilities: np.ndarray,
     groups: np.ndarray,
     forward_returns: np.ndarray,
     mid: np.ndarray,
     spread: np.ndarray,
-    fee_bps: float,
+    fee_scenarios: tuple[float, ...],
     replicates: int,
     seed: int = 20261017,
-) -> dict:
+) -> dict[str, dict]:
     rng = np.random.default_rng(seed)
     names = (
         "mean_absolute_forward_move",
@@ -68,25 +68,29 @@ def bootstrap_economics(
         "mean_move_minus_cost",
         "fraction_move_exceeds_cost",
     )
-    samples = {name: [] for name in names}
+    samples = {fee: {name: [] for name in names} for fee in fee_scenarios}
     for _ in range(replicates):
         index = moving_block_indices(groups, 100, rng)
-        result = economics(
-            labels[index],
-            probabilities[index],
-            forward_returns[index],
-            mid[index],
-            spread[index],
-            fee_bps,
-        )
-        for name in names:
-            samples[name].append(result[name])
+        for fee_bps in fee_scenarios:
+            result = economics(
+                labels[index],
+                probabilities[index],
+                forward_returns[index],
+                mid[index],
+                spread[index],
+                fee_bps,
+            )
+            for name in names:
+                samples[fee_bps][name].append(result[name])
     return {
-        name: {
-            "lower": float(np.nanquantile(values, 0.025)),
-            "upper": float(np.nanquantile(values, 0.975)),
+        str(fee): {
+            name: {
+                "lower": float(np.nanquantile(values, 0.025)),
+                "upper": float(np.nanquantile(values, 0.975)),
+            }
+            for name, values in fee_samples.items()
         }
-        for name, values in samples.items()
+        for fee, fee_samples in samples.items()
     }
 
 
@@ -134,8 +138,19 @@ def main() -> None:
         values["groups"],
         replicates=args.replicates,
     )
+    fee_scenarios = (0.0, 0.5, 1.0, 2.0)
+    economic_ci = bootstrap_economics_scenarios(
+        values["labels"],
+        values["probabilities"],
+        values["groups"],
+        values["forward_returns"],
+        values["mid"],
+        values["spread"],
+        fee_scenarios,
+        args.replicates,
+    )
     fee_reports = {}
-    for fee_bps in (0.0, 0.5, 1.0, 2.0):
+    for fee_bps in fee_scenarios:
         point_economic = economics(
             values["labels"],
             values["probabilities"],
@@ -144,16 +159,7 @@ def main() -> None:
             values["spread"],
             fee_bps,
         )
-        point_economic["ci95"] = bootstrap_economics(
-            values["labels"],
-            values["probabilities"],
-            values["groups"],
-            values["forward_returns"],
-            values["mid"],
-            values["spread"],
-            fee_bps,
-            args.replicates,
-        )
+        point_economic["ci95"] = economic_ci[str(fee_bps)]
         fee_reports[str(fee_bps)] = point_economic
     result = {
         "model": args.model,
