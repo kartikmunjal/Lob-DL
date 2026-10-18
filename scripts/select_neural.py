@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import gc
 import json
 from pathlib import Path
 
@@ -111,6 +112,12 @@ def main() -> None:
                 "parameter_count": parameter_counts[-1],
             }
             save_progress(progress_path, progress)
+            # On Windows, persistent DataLoader workers otherwise survive long
+            # enough to overlap the next fit and can terminate the subprocess
+            # after one candidate. Release every fit before constructing another.
+            del scheduler, optimizer, model, train_loader, validation_loader
+            gc.collect()
+            torch.cuda.empty_cache()
         candidates.append(
             summarize_candidate(
                 trial,
