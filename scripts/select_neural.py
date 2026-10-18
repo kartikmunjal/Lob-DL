@@ -21,7 +21,11 @@ from lobdl.search import (
     select_candidate,
     summarize_candidate,
 )
-from lobdl.selection_lock import assert_not_frozen, verify_presearch_timing
+from lobdl.selection_lock import (
+    assert_not_frozen,
+    completed_selection,
+    verify_presearch_timing,
+)
 from lobdl.training import fit_classifier, seed_everything
 
 
@@ -44,6 +48,10 @@ def main() -> None:
 
     verify_presearch_timing(args.timing_report)
     assert_not_frozen(args.output)
+    existing = completed_selection(args.output, args.model, args.horizon)
+    if existing is not None:
+        print(json.dumps({**existing, "candidates": "already_complete"}, indent=2))
+        return
     device = torch.device("cuda")
     train, validation = make_train_validation_datasets(args.data, args.horizon)
     candidates = []

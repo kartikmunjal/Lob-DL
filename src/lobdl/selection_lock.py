@@ -4,6 +4,8 @@ import hashlib
 import json
 from pathlib import Path
 
+from .search import candidate_grid
+
 MODELS = ("B1", "B2", "M1", "M2")
 HORIZONS = (10, 20, 50, 100)
 
@@ -20,6 +22,24 @@ def verify_presearch_timing(path: Path) -> dict:
 def assert_not_frozen(root: Path) -> None:
     if (root / "selections" / "FROZEN.json").exists():
         raise RuntimeError("selections are frozen; refusing to alter validation searches")
+
+
+def completed_selection(root: Path, model: str, horizon: int) -> dict | None:
+    path = selection_path(root, model, horizon)
+    if not path.exists():
+        return None
+    report = json.loads(path.read_text(encoding="utf-8"))
+    expected_parameters = candidate_grid(model)
+    observed_parameters = [item["parameters"] for item in report.get("candidates", ())]
+    if (
+        report.get("model") != model
+        or report.get("horizon") != horizon
+        or report.get("selection_N_trials") != 12
+        or report.get("test_data_loaded") is not False
+        or observed_parameters != expected_parameters
+    ):
+        raise ValueError(f"completed selection does not match registered grid: {path}")
+    return report
 
 
 def selection_path(root: Path, model: str, horizon: int) -> Path:

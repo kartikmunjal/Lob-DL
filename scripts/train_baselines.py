@@ -26,6 +26,7 @@ from lobdl.search import (
 )
 from lobdl.selection_lock import (
     assert_not_frozen,
+    completed_selection,
     selection_path,
     verify_lock,
     verify_presearch_timing,
@@ -134,6 +135,10 @@ def run_selection(args) -> None:
         raise SystemExit("shipped144 is a fixed-config final ablation, not a search")
     verify_presearch_timing(args.timing_report)
     assert_not_frozen(args.output)
+    existing = completed_selection(args.output, args.model, args.horizon)
+    if existing is not None:
+        print(json.dumps({**existing, "candidates": "already_complete"}, indent=2))
+        return
     train_x, train_y, _, _ = assemble(args.data, list(range(1, 7)), args.horizon)
     validation_x, validation_y, _, _ = assemble(args.data, [7], args.horizon, purge=200)
     if args.model == "B1":
