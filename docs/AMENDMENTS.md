@@ -143,3 +143,13 @@ This amendment was authorized and committed before any LOBSTER T1 label distribu
 - The deliberately leaky normalization diagnostic is restricted to B1: refit the otherwise selected B1 after standardizing on the concatenated FI train, validation, and test feature matrix, once per horizon. It is labeled invalid and cannot enter any model comparison claim.
 - The days-1-through-7 refit amendment is restricted to M1. For each horizon and final seed, use the validation-selected configuration and the fixed best-epoch count selected by that seed's primary days-1-through-6 run; refit once on days 1-7 without further stopping. This is secondary and cannot replace the no-refit primary.
 - Book-depth ablations retrain M1 and M2 at depths 1 and 5 using the horizon-specific selected configuration and all five final seeds. Missing deeper columns are removed structurally; architecture adapters may change only dimensions forced by depth. Depth 10 remains primary. These are two preregistered reported variants per model and horizon and receive no new hyperparameter search.
+
+## 2026-10-18 — Mechanical explanation strata
+
+This analysis-only amendment was committed while validation search was running and before any FI-2010 test prediction or LOBSTER T1 result was loaded. It changes no model, selection, threshold, split, or primary metric.
+
+- Fixed comparisons are B2 minus B1, M1 minus B2, and M2 minus M1 at every primary horizon.
+- Explain differences using paired per-window correctness (`1[model A correct] - 1[model B correct]`) stratified by contemporaneous relative spread, signed top-10 volume imbalance, and 50-row realized volatility.
+- For each state variable and horizon, define the four bin boundaries once from FI-2010 days 1-6 at the 25th, 50th, and 75th percentiles. Apply those frozen values to days 8-10. Do not form bins from test quantiles or model results.
+- Report each state bin and each true class. Confidence intervals use the same 2,000-replicate, 100-row paired moving-block bootstrap within stock-day and seed as the primary comparisons.
+- This is a descriptive mechanism analysis, not a new performance metric or selection criterion. An overall model claim still rests on preregistered macro-F1, MCC, calibration, and paired intervals.

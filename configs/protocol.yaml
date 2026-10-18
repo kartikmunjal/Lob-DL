@@ -129,6 +129,15 @@ evaluation:
       primary_depth: 10
       seeds: [11, 23, 47, 91, 137]
       new_hyperparameter_search: false
+    mechanical_explanation:
+      comparisons: [B2_minus_B1, M1_minus_B2, M2_minus_M1]
+      outcome: paired_per_window_correctness_difference
+      states: [relative_spread, volume_imbalance_10, realized_volatility_50]
+      bin_quantiles: [0.25, 0.50, 0.75]
+      bin_fit_scope: fi2010_days_1_to_6_by_horizon
+      evaluation_scope: fi2010_days_8_to_10
+      class_stratification: true
+      bootstrap: {type: paired_moving_block, block_length: 100, replicates: 2000}
 
 models:
   common:

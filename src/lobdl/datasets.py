@@ -8,6 +8,7 @@ import torch
 from torch.utils.data import Dataset
 
 from .data.fi2010 import HORIZONS, LABEL_TO_INDEX, Segment, iter_window_indices
+from .features import causal_features
 
 
 def load_segments(root: Path) -> dict[int, tuple[Segment, ...]]:
@@ -107,3 +108,36 @@ def fi_economic_arrays(
             returns.append((future - mid[ends]) / np.maximum(np.abs(mid[ends]), 1e-12))
             spreads.append((raw[ends, 0] - raw[ends, 2]) / np.maximum(np.abs(mid[ends]), 1e-12))
     return np.concatenate(returns), np.concatenate(spreads)
+
+
+def fi_state_arrays(
+    root: str | Path,
+    days: list[int],
+    horizon: int,
+    purge: int = 0,
+    window: int = 100,
+) -> dict[str, np.ndarray]:
+    """Registered contemporaneous mechanism states in prediction-window order."""
+    root = Path(root)
+    segments = load_segments(root)
+    horizon_rows = horizon // 10
+    selected = ("relative_spread", "volume_imbalance_10", "realized_volatility_50")
+    output = {name: [] for name in selected}
+    for day in days:
+        matrix = np.load(root / f"day_{day:02d}.npy", mmap_mode="r")
+        for segment in segments[day]:
+            raw = np.asarray(matrix[segment.start : segment.stop, :40])
+            features, names = causal_features(raw)
+            local = Segment(day, segment.stock, 0, len(raw))
+            ends = np.fromiter(
+                (
+                    end
+                    for _, end in iter_window_indices(
+                        (local,), window, horizon_rows, purge
+                    )
+                ),
+                dtype=np.int64,
+            )
+            for name in selected:
+                output[name].append(features[ends, names.index(name)].astype(np.float64))
+    return {name: np.concatenate(parts) for name, parts in output.items()}
