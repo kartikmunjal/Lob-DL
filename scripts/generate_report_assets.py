@@ -28,6 +28,17 @@ TRANSFER_NAMES = {
     "M1 DeepLOB": "M1",
     "M2 transformer": "M2",
 }
+PRIMARY_REPORT_SYSTEMS = (
+    "B0:majority",
+    "B0:persistence",
+    "B1",
+    "B1_shipped144",
+    "B2",
+    "B2_shipped144",
+    "M1",
+    "M1_anchor",
+    "M2",
+)
 
 
 def read_json(path: Path) -> dict:
@@ -354,6 +365,88 @@ def generate_mechanisms(artifacts: Path, output: Path) -> list[dict]:
     return rows
 
 
+def append_paired_rows(rows: list[dict], dataset: str, report: dict) -> None:
+    for metric, values in report["metric_differences"].items():
+        difference = np.atleast_1d(values["difference"])
+        lower = np.atleast_1d(values["lower"])
+        upper = np.atleast_1d(values["upper"])
+        classes = ("down", "stationary", "up") if len(difference) == 3 else ("all",)
+        for index, class_name in enumerate(classes):
+            rows.append(
+                {
+                    "dataset": dataset,
+                    "horizon": report["horizon"],
+                    "system_a": report["system_a"],
+                    "system_b": report["system_b"],
+                    "difference_order": "system_a_minus_system_b",
+                    "metric": metric,
+                    "class": class_name,
+                    "difference": difference[index],
+                    "ci95_lower": lower[index],
+                    "ci95_upper": upper[index],
+                    "system_a_selection_N_trials": report["system_a_N_trials"][
+                        "selection_N_trials"
+                    ],
+                    "system_a_reported_variant_N_trials": report["system_a_N_trials"][
+                        "reported_variant_N_trials"
+                    ],
+                    "system_b_selection_N_trials": report["system_b_N_trials"][
+                        "selection_N_trials"
+                    ],
+                    "system_b_reported_variant_N_trials": report["system_b_N_trials"][
+                        "reported_variant_N_trials"
+                    ],
+                    "bootstrap_replicates": report["bootstrap"]["replicates"],
+                    "block_length": report["bootstrap"]["block_length"],
+                }
+            )
+
+
+def generate_paired_comparisons(artifacts: Path, output: Path) -> list[dict]:
+    rows = []
+    for horizon in HORIZONS:
+        for left in range(len(PRIMARY_REPORT_SYSTEMS)):
+            for right in range(left + 1, len(PRIMARY_REPORT_SYSTEMS)):
+                system_a = PRIMARY_REPORT_SYSTEMS[left]
+                system_b = PRIMARY_REPORT_SYSTEMS[right]
+                name = f"{system_a.replace(':', '_')}_minus_{system_b.replace(':', '_')}.json"
+                report = read_json(
+                    artifacts / "reports" / "paired" / f"h{horizon}" / name
+                )
+                append_paired_rows(rows, "FI-2010_primary", report)
+        for system_a, system_b in (
+            ("M1", "M1_refit"),
+            ("M1", "M1_depth1"),
+            ("M1", "M1_depth5"),
+            ("M2", "M2_depth1"),
+            ("M2", "M2_depth5"),
+        ):
+            report = read_json(
+                artifacts
+                / "reports"
+                / "paired"
+                / f"h{horizon}"
+                / f"{system_a}_minus_{system_b}.json"
+            )
+            append_paired_rows(rows, "FI-2010_secondary", report)
+        transfer = tuple(TRANSFER_NAMES.values())
+        for labels in ("fixed", "matched"):
+            for left in range(len(transfer)):
+                for right in range(left + 1, len(transfer)):
+                    system_a, system_b = transfer[left], transfer[right]
+                    report = read_json(
+                        artifacts
+                        / "reports"
+                        / "transfer"
+                        / "paired"
+                        / f"h{horizon}"
+                        / f"{system_a}_minus_{system_b}_{labels}.json"
+                    )
+                    append_paired_rows(rows, f"LOBSTER_{labels}", report)
+    write_csv(output / "tables" / "paired_model_comparisons.csv", rows)
+    return rows
+
+
 def generate_compute(artifacts: Path, output: Path) -> list[dict]:
     rows = []
     for system, model, variant in PRIMARY_SYSTEMS:
@@ -492,6 +585,11 @@ def markdown_summary(
             ),
             "",
             f"Rows reported: {len(mechanism_rows)}.",
+            "",
+            (
+                "All preregistered paired metric differences and 95% intervals are in "
+                "`tables/paired_model_comparisons.csv`."
+            ),
         ]
     )
     (output / "RESULTS.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -511,10 +609,11 @@ def main() -> None:
     generate_fi_economics(args.artifacts, args.output)
     generate_reliability(args.artifacts, args.output)
     mechanism_rows = generate_mechanisms(args.artifacts, args.output)
+    generate_paired_comparisons(args.artifacts, args.output)
     generate_compute(args.artifacts, args.output)
     generate_audits(args.artifacts, args.output)
     markdown_summary(fi_rows, transfer_rows, mechanism_rows, args.output)
-    print(json.dumps({"output": str(args.output), "figures": 8, "tables": 10}, indent=2))
+    print(json.dumps({"output": str(args.output), "figures": 8, "tables": 11}, indent=2))
 
 
 if __name__ == "__main__":

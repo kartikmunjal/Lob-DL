@@ -12,6 +12,7 @@ from scripts.generate_report_assets import (
     generate_fi,
     generate_fi_economics,
     generate_mechanisms,
+    generate_paired_comparisons,
     generate_reliability,
     generate_transfer,
     markdown_summary,
@@ -69,6 +70,37 @@ def transfer_summary() -> dict:
         "fee_scenarios_bps": {str(fee): economic for fee in (0.0, 0.5, 1.0, 2.0)}
     }
     return value
+
+
+def paired_summary(system_a: str, system_b: str, horizon: int) -> dict:
+    scalar = {"difference": 0.01, "lower": -0.01, "upper": 0.03}
+    vector = {
+        "difference": [0.01, 0.0, -0.01],
+        "lower": [-0.01, -0.02, -0.03],
+        "upper": [0.03, 0.02, 0.01],
+    }
+    return {
+        "system_a": system_a,
+        "system_b": system_b,
+        "system_a_N_trials": {
+            "selection_N_trials": 12,
+            "reported_variant_N_trials": 0,
+        },
+        "system_b_N_trials": {
+            "selection_N_trials": 12,
+            "reported_variant_N_trials": 0,
+        },
+        "horizon": horizon,
+        "bootstrap": {"replicates": 2000, "block_length": 100},
+        "metric_differences": {
+            "precision": vector,
+            "recall": vector,
+            "f1": vector,
+            "macro_f1": scalar,
+            "mcc": scalar,
+            "ece": scalar,
+        },
+    }
 
 
 def test_all_public_assets_generate_from_named_reports(tmp_path):
@@ -179,6 +211,55 @@ def test_all_public_assets_generate_from_named_reports(tmp_path):
                     "rows": mechanism_rows,
                 },
             )
+    report_systems = (
+        "B0:majority",
+        "B0:persistence",
+        "B1",
+        "B1_shipped144",
+        "B2",
+        "B2_shipped144",
+        "M1",
+        "M1_anchor",
+        "M2",
+    )
+    for horizon in HORIZONS:
+        for left in range(len(report_systems)):
+            for right in range(left + 1, len(report_systems)):
+                system_a, system_b = report_systems[left], report_systems[right]
+                name = f"{system_a.replace(':', '_')}_minus_{system_b.replace(':', '_')}.json"
+                write(
+                    artifacts / "reports" / "paired" / f"h{horizon}" / name,
+                    paired_summary(system_a, system_b, horizon),
+                )
+        for system_a, system_b in (
+            ("M1", "M1_refit"),
+            ("M1", "M1_depth1"),
+            ("M1", "M1_depth5"),
+            ("M2", "M2_depth1"),
+            ("M2", "M2_depth5"),
+        ):
+            write(
+                artifacts
+                / "reports"
+                / "paired"
+                / f"h{horizon}"
+                / f"{system_a}_minus_{system_b}.json",
+                paired_summary(system_a, system_b, horizon),
+            )
+        transfer_systems = tuple(TRANSFER_NAMES.values())
+        for labels in ("fixed", "matched"):
+            for left in range(len(transfer_systems)):
+                for right in range(left + 1, len(transfer_systems)):
+                    system_a, system_b = transfer_systems[left], transfer_systems[right]
+                    write(
+                        artifacts
+                        / "reports"
+                        / "transfer"
+                        / "paired"
+                        / f"h{horizon}"
+                        / f"{system_a}_minus_{system_b}_{labels}.json",
+                        paired_summary(system_a, system_b, horizon),
+                    )
     (output / "figures").mkdir(parents=True)
     fi = generate_fi(artifacts, output)
     transfer = generate_transfer(artifacts, output)
@@ -187,9 +268,11 @@ def test_all_public_assets_generate_from_named_reports(tmp_path):
     generate_fi_economics(artifacts, output)
     generate_reliability(artifacts, output)
     mechanisms = generate_mechanisms(artifacts, output)
+    paired = generate_paired_comparisons(artifacts, output)
     generate_compute(artifacts, output)
     generate_audits(artifacts, output)
     markdown_summary(fi, transfer, mechanisms, output)
     assert (output / "RESULTS.md").exists()
     assert len(list((output / "figures").glob("*.png"))) == 8
-    assert len(list((output / "tables").glob("*.csv"))) == 10
+    assert len(list((output / "tables").glob("*.csv"))) == 11
+    assert len(paired) == 3408  # 284 paired reports times 12 metric/class rows.

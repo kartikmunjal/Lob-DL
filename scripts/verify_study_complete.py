@@ -31,6 +31,7 @@ TABLES = {
     "lobster_reconstruction_by_time.csv",
     "lobster_reconstruction_summary.csv",
     "lobster_transfer_metrics.csv",
+    "paired_model_comparisons.csv",
 }
 
 
