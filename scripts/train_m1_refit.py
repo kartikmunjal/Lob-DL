@@ -39,6 +39,22 @@ def main() -> None:
     primary_report = json.loads(primary_report_path.read_text(encoding="utf-8"))
     fixed_epochs = int(primary_report["best_epoch"])
     parameters = selection["selected"]["parameters"]
+    run = args.artifacts / "M1_refit" / f"h{args.horizon}" / f"seed{args.seed}"
+    required = (run / "checkpoint.pt", run / "predictions.npz", run / "report.json")
+    present = [path.exists() for path in required]
+    if all(present):
+        existing = json.loads((run / "report.json").read_text(encoding="utf-8"))
+        if (
+            existing.get("horizon") != args.horizon
+            or existing.get("seed") != args.seed
+            or existing.get("parameters") != parameters
+            or existing.get("fixed_epochs_from_primary_seed_run") != fixed_epochs
+        ):
+            raise ValueError(f"completed refit metadata mismatch: {run}")
+        print(json.dumps({**existing, "resume_status": "already_complete"}, indent=2))
+        return
+    if (run / "report.json").exists():
+        raise FileExistsError(f"incomplete or corrupt refit artifact set: {run}")
 
     seed_everything(args.seed)
     device = torch.device("cuda")
@@ -57,7 +73,6 @@ def main() -> None:
     optimizer, scheduler, clip = build_optimizer_and_scheduler(
         "M1", model, parameters, fixed_epochs, len(train_loader)
     )
-    run = args.artifacts / "M1_refit" / f"h{args.horizon}" / f"seed{args.seed}"
     checkpoint = run / "checkpoint.pt"
     fit = fit_fixed_epochs(
         model,

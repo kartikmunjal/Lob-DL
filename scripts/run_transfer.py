@@ -149,6 +149,22 @@ def main() -> None:
         parser.error("B2/M1/M2 require a final seed; deterministic systems prohibit one")
 
     verify_lock(args.artifacts)
+    run_name = "deterministic" if args.seed is None else f"seed{args.seed}"
+    output = args.artifacts / "transfer" / args.model / f"h{args.horizon}" / run_name
+    required = (output / "predictions.npz", output / "report.json")
+    present = [path.exists() for path in required]
+    if all(present):
+        existing = json.loads((output / "report.json").read_text(encoding="utf-8"))
+        if (
+            existing.get("model") != args.model
+            or existing.get("horizon") != args.horizon
+            or existing.get("seed") != args.seed
+        ):
+            raise ValueError(f"completed transfer metadata mismatch: {output}")
+        print(json.dumps({**existing, "resume_status": "already_complete"}, indent=2))
+        return
+    if (output / "report.json").exists():
+        raise FileExistsError(f"incomplete or corrupt transfer artifact set: {output}")
     estimator = load_estimator(args.artifacts, args.model, args.horizon, args.seed)
     target = fi_training_proportions(args.fi_data, args.horizon)
     majority = int(target.argmax())
@@ -239,8 +255,6 @@ def main() -> None:
             ).tolist(),
         }
 
-    run_name = "deterministic" if args.seed is None else f"seed{args.seed}"
-    output = args.artifacts / "transfer" / args.model / f"h{args.horizon}" / run_name
     output.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
         output / "predictions.npz", **{key: np.concatenate(value) for key, value in pooled.items()}

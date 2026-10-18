@@ -28,6 +28,19 @@ def main() -> None:
     primary = args.artifacts / "B1" / f"h{args.horizon}" / "deterministic" / "report.json"
     if not primary.exists():
         raise FileNotFoundError("primary B1 final result must exist before the leaky diagnostic")
+    run = args.artifacts / "B1_leaky" / f"h{args.horizon}" / "deterministic"
+    required = (run / "predictions.npz", run / "report.json")
+    present = [path.exists() for path in required]
+    if all(present):
+        existing = json.loads((run / "report.json").read_text(encoding="utf-8"))
+        if existing.get("horizon") != args.horizon or existing.get("selected") != selection[
+            "selected"
+        ]["parameters"]:
+            raise ValueError(f"completed leaky-diagnostic metadata mismatch: {run}")
+        print(json.dumps({**existing, "resume_status": "already_complete"}, indent=2))
+        return
+    if (run / "report.json").exists():
+        raise FileExistsError(f"incomplete or corrupt leaky-diagnostic artifact set: {run}")
 
     train_x, train_y, _, _ = assemble(args.data, list(range(1, 7)), args.horizon)
     validation_x, _, _, _ = assemble(args.data, [7], args.horizon, purge=200)
@@ -39,7 +52,6 @@ def main() -> None:
     model = fit_model("B1", selection["selected"]["parameters"])
     model.fit(scaler.transform(train_x), train_y)
     probabilities = model.predict_proba(scaler.transform(test_x))
-    run = args.artifacts / "B1_leaky" / f"h{args.horizon}" / "deterministic"
     run.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
         run / "predictions.npz",

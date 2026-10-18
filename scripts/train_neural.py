@@ -55,13 +55,6 @@ def main() -> None:
             "M1 anchor is the selected configuration; its selected runs serve as anchor runs"
         )
 
-    seed_everything(args.seed)
-    device = torch.device("cuda")
-    train, validation = make_train_validation_datasets(args.data, args.horizon, depth)
-    train_loader, validation_loader, _ = make_loaders(
-        train, validation, None, args.seed, args.batch_size, args.workers
-    )
-    model = build_model(args.model, parameters, depth).to(device)
     if args.variant == "selected":
         family = args.model
     elif args.variant == "anchor":
@@ -69,6 +62,30 @@ def main() -> None:
     else:
         family = f"{args.model}_{args.variant}"
     run = args.output / family / f"h{args.horizon}" / f"seed{args.seed}"
+    required = (run / "checkpoint.pt", run / "predictions.npz", run / "report.json")
+    present = [path.exists() for path in required]
+    if all(present):
+        existing = json.loads((run / "report.json").read_text(encoding="utf-8"))
+        if (
+            existing.get("model") != args.model
+            or existing.get("variant") != args.variant
+            or existing.get("horizon") != args.horizon
+            or existing.get("seed") != args.seed
+            or existing.get("parameters") != parameters
+        ):
+            raise ValueError(f"completed neural-run metadata mismatch: {run}")
+        print(json.dumps({**existing, "resume_status": "already_complete"}, indent=2))
+        return
+    if (run / "report.json").exists():
+        raise FileExistsError(f"incomplete or corrupt neural-run artifact set: {run}")
+
+    seed_everything(args.seed)
+    device = torch.device("cuda")
+    train, validation = make_train_validation_datasets(args.data, args.horizon, depth)
+    train_loader, validation_loader, _ = make_loaders(
+        train, validation, None, args.seed, args.batch_size, args.workers
+    )
+    model = build_model(args.model, parameters, depth).to(device)
     checkpoint = run / "checkpoint.pt"
     optimizer, scheduler, clip = build_optimizer_and_scheduler(
         args.model, model, parameters, args.max_epochs, len(train_loader)

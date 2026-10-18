@@ -217,6 +217,31 @@ def run_final(args) -> None:
     verify_lock(args.output)
     if args.model == "B0" and args.feature_set != "primary":
         raise SystemExit("B0 has no shipped144 feature ablation")
+    family = args.model if args.feature_set == "primary" else f"{args.model}_shipped144"
+    run_name = (
+        args.rule
+        if args.model == "B0"
+        else ("deterministic" if args.model == "B1" else f"seed{args.seed}")
+    )
+    run = args.output / family / f"h{args.horizon}" / run_name
+    required = [run / "predictions.npz", run / "report.json"]
+    if args.model != "B0":
+        required.append(run / "model.pkl")
+    present = [path.exists() for path in required]
+    if all(present):
+        existing = json.loads((run / "report.json").read_text(encoding="utf-8"))
+        expected_seed = None if args.model in ("B0", "B1") else args.seed
+        if (
+            existing.get("model") != args.model
+            or existing.get("horizon") != args.horizon
+            or existing.get("feature_set") != args.feature_set
+            or existing.get("seed") != expected_seed
+        ):
+            raise ValueError(f"completed final-run metadata mismatch: {run}")
+        print(json.dumps({**existing, "resume_status": "already_complete"}, indent=2))
+        return
+    if (run / "report.json").exists():
+        raise FileExistsError(f"incomplete or corrupt final-run artifact set: {run}")
     train_x, train_y, _, feature_names = assemble(
         args.data, list(range(1, 7)), args.horizon, feature_set=args.feature_set
     )
@@ -264,8 +289,6 @@ def run_final(args) -> None:
             test_x = scaler.transform(test_x)
         probabilities = model.predict_proba(test_x)
         run_name = "deterministic" if args.model == "B1" else f"seed{args.seed}"
-    family = args.model if args.feature_set == "primary" else f"{args.model}_shipped144"
-    run = args.output / family / f"h{args.horizon}" / run_name
     run.mkdir(parents=True, exist_ok=True)
     metrics = classification_metrics(test_y, probabilities)
     if args.model == "B0":
