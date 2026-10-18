@@ -45,6 +45,32 @@ data:
       primary_t1_input: vendor_book
       reconstructed_sensitivity_window: exact_all_top10_cells_entire_100_event_window
       posthoc_match_cutoff: prohibited_report_full_table
+    t1_amendment_2026_10_17:
+      primary_input: vendor_top10_book
+      representation_sampling:
+        messages_per_representation: 10
+        retained_message_indices_one_based: multiples_of_10
+        book_state_timing: after_corresponding_message
+        input_window_representations: 100
+      chronological_split:
+        calibration_prefix_fraction: 0.20
+        boundary_rounding: floor
+        evaluation_suffix_fraction: 0.80
+        label_horizon_must_remain_inside_split: true
+        past_input_context_may_precede_evaluation_boundary: true
+      decimal_precision:
+        fit_on: per_ticker_calibration_prefix_only
+        fit_separately_per_column: true
+        rule: smallest_nonnegative_k_with_max_abs_x_over_10_pow_k_strictly_below_1
+        all_zero_k: 0
+        centering: prohibited
+        variance_scaling: prohibited
+        distribution_mapping: prohibited
+      sampled_row_horizons: {10: 1, 20: 2, 50: 5, 100: 10}
+      matched_threshold:
+        target_proportions: fi2010_days_1_to_6_by_horizon
+        select_separately_per_ticker_and_horizon: true
+        exact_tie_break: smaller_alpha
 
 splits:
   train_days: [1, 2, 3, 4, 5, 6]
@@ -82,6 +108,27 @@ evaluation:
   report_seed_sd_separately: true
   paired_tests: same_blocks_per_window_metric_difference
   n_trials_definition: preregistered_hyperparameter_trials_plus_reported_variants
+  secondary_analyses:
+    economic_significance:
+      primary_round_trip_fee_bps: 1.0
+      sensitivity_round_trip_fee_bps: [0.0, 0.5, 2.0]
+      realized_move: absolute_forward_mean_midprice_move_conditional_on_correct_direction
+      prohibited_outputs: [returns, sharpe, equity_curve, fills, profitability_claim]
+    deliberately_leaky_normalization:
+      model: B1
+      statistic_fit_scope: train_validation_test
+      status: invalid_diagnostic_only
+    validation_refit:
+      model: M1
+      train_days: [1, 2, 3, 4, 5, 6, 7]
+      epochs: primary_seed_specific_best_epoch
+      further_early_stopping: false
+    depth_ablation:
+      models: [M1, M2]
+      depths: [1, 5]
+      primary_depth: 10
+      seeds: [11, 23, 47, 91, 137]
+      new_hyperparameter_search: false
 
 models:
   common:

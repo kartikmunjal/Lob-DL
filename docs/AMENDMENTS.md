@@ -115,3 +115,31 @@ This implementation clarification was committed before timing, search, or test e
 ## 2026-10-17 — DeepLOB source-verification reporting correction
 
 This reporting-only correction was committed while validation search was running and before any test evaluation. It changes no model, hyperparameter, seed, split, or selection rule. The primary paper states batch size 32, Adam learning rate 0.01 and epsilon 1, validation-accuracy patience 20, roughly 100 FI-2010 epochs, z-score-normalized FI-2010 input, and approximately 60,000 parameters. The authors' later released PyTorch notebook instead uses batch size 64, learning rate 0.0001, 50 fixed epochs with validation-loss checkpointing, decimal-precision FI-2010 input, and exactly 143,907 parameters. Its released TensorFlow v2 notebook uses batch size 128. The study's batch size 64 and 143,907-parameter implementation follow the released PyTorch code; its optimizer anchor follows the paper; its leakage-controlled split and 40-epoch macro-F1 stopping protocol remain study-specific. All published-number comparisons must list these differences and may not be described as an exact reproduction.
+
+## 2026-10-17 — Transfer preprocessing and registered secondary analyses
+
+### Status and authorization
+
+This amendment was authorized and committed before any LOBSTER T1 label distribution, threshold, prediction, class proportion, or transfer metric was computed or inspected. No member of the study has looked at a LOBSTER transfer result. The earlier reconstruction audit compared books only and remains separate from T1. FI-2010 validation search was in progress, but no FI-2010 test evaluation had begun. These rules do not use validation outcomes and change no primary model-selection rule.
+
+### LOBSTER event alignment and decimal-precision mapping
+
+- Use vendor-provided top-10 book files for primary T1, as already frozen. A row is the book state after its corresponding message.
+- Form one representation from every non-overlapping block of 10 messages by retaining the state after messages 10, 20, 30, and so on, aligned from the first vendor row. No averaging or outcome-dependent sampling is allowed. Thus a 100-row input contains 1,000 underlying messages, matching FI-2010's documented 10-event representations.
+- Split each ticker's sampled representations chronologically: the first 20% (integer floor) is calibration and the remaining 80% is evaluation. Labels used to calibrate a threshold must have their entire forward horizon inside the calibration prefix. Evaluation labels must have their entire forward horizon inside the evaluation suffix. Historical input context may precede the evaluation boundary, because it is past information available at prediction time.
+- Convert each of the 40 LOBSTER price/size columns by decimal-precision scaling only. For each column, using only its calibration-prefix observations, choose the smallest nonnegative integer `k` such that `max(abs(x / 10^k)) < 1`; break the impossible all-zero case at `k=0`. Freeze those 40 powers and apply them unchanged to the full ticker day. Do not center, variance-scale, quantile-map, or otherwise distribution-match target inputs.
+- The first target row is ask price, ask size, bid price, bid size at level 1, followed by the same ordering through level 10, matching FI-2010. Report all 40 fitted powers per ticker.
+
+### T1 labels and thresholds
+
+- At underlying-event horizons 10, 20, 50, and 100, use sampled-row horizons 1, 2, 5, and 10. The relative move is `(mean(next k sampled mid-prices) - current mid-price) / current mid-price`, with inclusive up/down boundaries.
+- Report the fixed-alpha variant at `alpha=0.002` even if classes collapse.
+- For the distribution-matched variant, compute the target class proportions from FI-2010 days 1-6 separately by horizon. On each LOBSTER ticker's calibration prefix, search the already registered ascending grid from 0 through 0.01 inclusive in steps of 0.000001. Minimize total-variation distance to the corresponding FI training proportions; exact ties select the smaller alpha by grid order. Select once per ticker and horizon, then freeze before any suffix prediction is scored.
+- Both variants use identical frozen model predictions; only their target labels differ. Report calibration and evaluation class counts and the chosen alpha. The chosen alpha is not pooled across tickers because their tick sizes and price levels differ; the selection algorithm and FI target proportions are common and frozen.
+
+### Registered secondary analyses
+
+- Economic significance is descriptive, not a strategy or backtest. Compare the absolute realized forward-mean mid-price move, conditional on a correct directional prediction, with the contemporaneous quoted spread plus a primary round-trip fee assumption of 1 basis point of mid-price. Report pre-registered sensitivities at 0, 0.5, and 2 basis points. Do not report returns, Sharpe, an equity curve, fills, or a profitability claim.
+- The deliberately leaky normalization diagnostic is restricted to B1: refit the otherwise selected B1 after standardizing on the concatenated FI train, validation, and test feature matrix, once per horizon. It is labeled invalid and cannot enter any model comparison claim.
+- The days-1-through-7 refit amendment is restricted to M1. For each horizon and final seed, use the validation-selected configuration and the fixed best-epoch count selected by that seed's primary days-1-through-6 run; refit once on days 1-7 without further stopping. This is secondary and cannot replace the no-refit primary.
+- Book-depth ablations retrain M1 and M2 at depths 1 and 5 using the horizon-specific selected configuration and all five final seeds. Missing deeper columns are removed structurally; architecture adapters may change only dimensions forced by depth. Depth 10 remains primary. These are two preregistered reported variants per model and horizon and receive no new hyperparameter search.
