@@ -1,6 +1,21 @@
 import numpy as np
 
-from lobdl.metrics import bootstrap_metrics, paired_bootstrap_metric_differences
+from lobdl.metrics import (
+    bootstrap_metrics,
+    paired_bootstrap_metric_differences,
+    reliability_curve,
+)
+
+
+def test_reliability_curve_preserves_empty_bins_and_all_observations():
+    y = np.array([0, 1, 1])
+    probabilities = np.array([[0.8, 0.1, 0.1], [0.3, 0.6, 0.1], [0.2, 0.7, 0.1]])
+    curve = reliability_curve(y, probabilities, bins=5)
+    assert len(curve) == 5
+    assert sum(item["count"] for item in curve) == 3
+    assert curve[3]["count"] == 2
+    assert curve[3]["mean_confidence"] == 0.75
+    assert curve[3]["accuracy"] == 1.0
 
 
 def test_bootstrap_reports_per_class_intervals_and_paired_identity():

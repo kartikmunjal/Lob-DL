@@ -19,6 +19,28 @@ def expected_calibration_error(y: np.ndarray, probabilities: np.ndarray, bins: i
     return float(value)
 
 
+def reliability_curve(y: np.ndarray, probabilities: np.ndarray, bins: int = 15) -> list[dict]:
+    """Top-label reliability bins used for the registered calibration plots."""
+    confidence = probabilities.max(axis=1)
+    prediction = probabilities.argmax(axis=1)
+    correct = prediction == y
+    edges = np.linspace(0.0, 1.0, bins + 1)
+    output = []
+    for index, (low, high) in enumerate(itertools.pairwise(edges)):
+        mask = (confidence > low) & (confidence <= high)
+        output.append(
+            {
+                "bin": index + 1,
+                "lower_exclusive": float(low),
+                "upper_inclusive": float(high),
+                "count": int(mask.sum()),
+                "mean_confidence": float(confidence[mask].mean()) if mask.any() else None,
+                "accuracy": float(correct[mask].mean()) if mask.any() else None,
+            }
+        )
+    return output
+
+
 def classification_metrics(y: np.ndarray, probabilities: np.ndarray) -> dict:
     prediction = probabilities.argmax(axis=1)
     precision, recall, f1, support = precision_recall_fscore_support(y, prediction, labels=[0, 1, 2], zero_division=0)
@@ -27,6 +49,7 @@ def classification_metrics(y: np.ndarray, probabilities: np.ndarray) -> dict:
         "support": support.tolist(), "macro_f1": float(f1.mean()),
         "mcc": float(matthews_corrcoef(y, prediction)),
         "ece": expected_calibration_error(y, probabilities),
+        "reliability_curve": reliability_curve(y, probabilities),
         "confusion_matrix": confusion_matrix(y, prediction, labels=[0, 1, 2]).tolist(),
     }
 

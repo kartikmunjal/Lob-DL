@@ -159,6 +159,7 @@ def main() -> None:
         "model": args.model,
         "horizon": args.horizon,
         "label_variant": args.labels,
+        "class_order": ["down", "stationary", "up"],
         "selection_N_trials": 0 if args.model.startswith("B0_") else 12,
         "reported_variant_N_trials": 1 if args.labels == "matched" else 0,
         "N_seeds": len(paths),

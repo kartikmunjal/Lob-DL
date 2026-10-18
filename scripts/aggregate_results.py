@@ -73,6 +73,7 @@ def main() -> None:
     ci = bootstrap_metrics(labels, probabilities, groups, replicates=args.replicates)
     result = {
         "model": args.model, "variant": args.variant, "horizon": args.horizon,
+        "class_order": ["down", "stationary", "up"],
         "selection_N_trials": int(reports[0].get("selection_N_trials", 0)),
         "reported_variant_N_trials": (
             1
