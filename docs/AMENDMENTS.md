@@ -153,3 +153,11 @@ This analysis-only amendment was committed while validation search was running a
 - For each state variable and horizon, define the four bin boundaries once from FI-2010 days 1-6 at the 25th, 50th, and 75th percentiles. Apply those frozen values to days 8-10. Do not form bins from test quantiles or model results.
 - Report each state bin and each true class. Confidence intervals use the same 2,000-replicate, 100-row paired moving-block bootstrap within stock-day and seed as the primary comparisons.
 - This is a descriptive mechanism analysis, not a new performance metric or selection criterion. An overall model claim still rests on preregistered macro-F1, MCC, calibration, and paired intervals.
+
+## 2026-10-18 — Test-isolated model-ladder execution clarification
+
+This execution clarification was committed while neural validation search was running and before any FI-2010 test prediction or LOBSTER T1 result was loaded. It changes no model, grid, seed, split, metric, threshold, or comparison.
+
+- The original project timeline says baseline numbers are frozen before deep-model training. Operationally, B1 and B2 validation searches and selections completed before M1 and M2 validation searches, preserving the registered ladder order for model development.
+- No baseline test number is computed or inspected before neural selection. All 16 horizon-specific B1, B2, M1, and M2 validation selections are jointly hash-locked, published, and committed before any model may construct FI-2010 days 8–10.
+- This joint pre-test gate prevents baseline test outcomes from influencing neural-model decisions. Final reporting still presents the locked ladder and every registered model comparison; it does not imply that test results were revealed sequentially during development.

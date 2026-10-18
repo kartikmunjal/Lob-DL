@@ -97,6 +97,10 @@ randomness:
   deterministic_models: [B0, B1]
 
 evaluation:
+  model_ladder_execution:
+    validation_selection_order: [B1, B2, M1, M2]
+    joint_pretest_lock_required: true
+    baseline_test_results_visible_before_neural_selection: false
   metrics: [per_class_precision, per_class_recall, per_class_f1, macro_f1, mcc, ece]
   confidence_level: 0.95
   bootstrap:
