@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import pickle
 import time
 from pathlib import Path
 
@@ -285,6 +286,18 @@ def run_final(args) -> None:
         labels=test_y,
         groups=test_groups,
     )
+    if args.model != "B0":
+        with (run / "model.pkl").open("wb") as handle:
+            pickle.dump(
+                {
+                    "model": model,
+                    "scaler": scaler,
+                    "feature_names": feature_names,
+                    "feature_set": args.feature_set,
+                },
+                handle,
+                protocol=pickle.HIGHEST_PROTOCOL,
+            )
     (run / "report.json").write_text(
         json.dumps(report, indent=2) + "\n", encoding="utf-8"
     )
