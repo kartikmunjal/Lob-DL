@@ -111,7 +111,23 @@ models:
     dropout_location: final_lstm_output_before_classifier
     adam_weight_decay: 0.0
     primary_batch_size: 64
-    protocol_difference_batch_size: {pytorch: 64, tensorflow: 128}
+    protocol_difference_batch_size:
+      paper: 32
+      released_pytorch: 64
+      released_tensorflow_v2: 128
+      study: 64
+    protocol_difference_training:
+      paper: {early_stopping_metric: validation_accuracy, patience: 20, approximate_epochs: 100}
+      released_pytorch: {epochs: 50, checkpoint_metric: validation_loss, early_stopping: false}
+      study: {max_epochs: 40, early_stopping_metric: validation_macro_f1, patience: 5}
+    protocol_difference_normalization:
+      paper_fi2010: z_score
+      released_pytorch_fi2010: decimal_precision
+      study_fi2010: decimal_precision
+    reported_parameter_counts:
+      paper_approximate: 60000
+      released_pytorch_exact: 143907
+      study_exact: 143907
     paper_anchor_all_final_seeds_each_horizon: true
   M2:
     kind: transformer_encoder
