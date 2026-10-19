@@ -78,6 +78,91 @@ def metric_row(dataset: str, system: str, horizon: int, report: dict) -> dict:
     }
 
 
+def append_classification_rows(
+    rows: list[dict], dataset: str, analysis: str, system: str, horizon: int, report: dict
+) -> None:
+    for metric in ("precision", "recall", "f1", "macro_f1", "mcc", "ece"):
+        point = np.atleast_1d(report["metrics"][metric])
+        lower = np.atleast_1d(report["ci95"][metric]["lower"])
+        upper = np.atleast_1d(report["ci95"][metric]["upper"])
+        classes = ("down", "stationary", "up") if len(point) == 3 else ("all",)
+        for index, class_name in enumerate(classes):
+            rows.append(
+                {
+                    "dataset": dataset,
+                    "analysis": analysis,
+                    "system": system,
+                    "horizon": horizon,
+                    "metric": metric,
+                    "class": class_name,
+                    "value": point[index],
+                    "ci95_lower": lower[index],
+                    "ci95_upper": upper[index],
+                    "seed_sd_macro_f1": report["seed_macro_f1_sd"],
+                    "selection_N_trials": report["selection_N_trials"],
+                    "reported_variant_N_trials": report["reported_variant_N_trials"],
+                    "N_seeds": report["N_seeds"],
+                }
+            )
+
+
+def generate_classification_metrics(artifacts: Path, output: Path) -> list[dict]:
+    rows = []
+    for system, model, variant in PRIMARY_SYSTEMS:
+        for horizon in HORIZONS:
+            append_classification_rows(
+                rows,
+                "FI-2010",
+                "primary",
+                system,
+                horizon,
+                fi_summary(artifacts, model, horizon, variant),
+            )
+    ablations = (
+        ("B1 shipped-144", "B1_shipped144"),
+        ("B1 leaky invalid", "B1_leaky"),
+        ("B2 shipped-144", "B2_shipped144"),
+        ("M1 depth-5", "M1_depth5"),
+        ("M1 depth-1", "M1_depth1"),
+        ("M1 days-1-7 refit", "M1_refit"),
+        ("M1 paper-optimizer anchor", "M1_anchor"),
+        ("M2 depth-5", "M2_depth5"),
+        ("M2 depth-1", "M2_depth1"),
+    )
+    for system, model in ablations:
+        for horizon in HORIZONS:
+            append_classification_rows(
+                rows,
+                "FI-2010",
+                "secondary",
+                system,
+                horizon,
+                fi_summary(artifacts, model, horizon, None),
+            )
+    for labels in ("fixed", "matched"):
+        for system, _, _ in PRIMARY_SYSTEMS:
+            model = TRANSFER_NAMES[system]
+            for horizon in HORIZONS:
+                report = read_json(
+                    artifacts
+                    / "reports"
+                    / "transfer"
+                    / model
+                    / f"h{horizon}"
+                    / f"summary_{labels}.json"
+                )
+                append_classification_rows(
+                    rows,
+                    "LOBSTER",
+                    f"zero_shot_{labels}",
+                    system,
+                    horizon,
+                    report,
+                )
+    write_csv(output / "tables" / "classification_metrics_long.csv", rows)
+    return rows
+
+
 def plot_metric_panel(rows: list[dict], path: Path, title: str) -> None:
     fig, axis = plt.subplots(figsize=(9, 5.5))
     for system in dict.fromkeys(row["system"] for row in rows):
@@ -590,6 +675,11 @@ def markdown_summary(
                 "All preregistered paired metric differences and 95% intervals are in "
                 "`tables/paired_model_comparisons.csv`."
             ),
+            (
+                "All per-class precision, recall, and F1 results plus macro-F1, MCC, ECE, "
+                "95% intervals, seed SD, and N_trials are in "
+                "`tables/classification_metrics_long.csv`."
+            ),
         ]
     )
     (output / "RESULTS.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -610,10 +700,11 @@ def main() -> None:
     generate_reliability(args.artifacts, args.output)
     mechanism_rows = generate_mechanisms(args.artifacts, args.output)
     generate_paired_comparisons(args.artifacts, args.output)
+    generate_classification_metrics(args.artifacts, args.output)
     generate_compute(args.artifacts, args.output)
     generate_audits(args.artifacts, args.output)
     markdown_summary(fi_rows, transfer_rows, mechanism_rows, args.output)
-    print(json.dumps({"output": str(args.output), "figures": 8, "tables": 11}, indent=2))
+    print(json.dumps({"output": str(args.output), "figures": 8, "tables": 12}, indent=2))
 
 
 if __name__ == "__main__":

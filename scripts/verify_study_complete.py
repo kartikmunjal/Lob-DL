@@ -21,6 +21,7 @@ FIGURES = {
     "lobster_replay_exact_rate.png",
 }
 TABLES = {
+    "classification_metrics_long.csv",
     "compute_and_parameters.csv",
     "fi_ablations.csv",
     "fi_economic_significance.csv",

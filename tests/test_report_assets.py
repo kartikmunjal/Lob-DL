@@ -7,6 +7,7 @@ from scripts.generate_report_assets import (
     TRANSFER_NAMES,
     generate_ablation_table,
     generate_audits,
+    generate_classification_metrics,
     generate_compute,
     generate_economics,
     generate_fi,
@@ -42,9 +43,27 @@ def summary() -> dict:
         "fraction_move_exceeds_cost": 0.2,
         "ci95": {"mean_move_minus_cost_bps": {"lower": -2.0, "upper": 0.0}},
     }
+    vector = [0.4, 0.5, 0.6]
+    vector_ci = {"lower": [0.3, 0.4, 0.5], "upper": [0.5, 0.6, 0.7]}
+    scalar_ci = {"lower": 0.4, "upper": 0.6}
     return {
-        "metrics": {"macro_f1": 0.5, "reliability_curve": curve},
-        "ci95": {"macro_f1": {"lower": 0.4, "upper": 0.6}},
+        "metrics": {
+            "precision": vector,
+            "recall": vector,
+            "f1": vector,
+            "macro_f1": 0.5,
+            "mcc": 0.5,
+            "ece": 0.1,
+            "reliability_curve": curve,
+        },
+        "ci95": {
+            "precision": vector_ci,
+            "recall": vector_ci,
+            "f1": vector_ci,
+            "macro_f1": scalar_ci,
+            "mcc": scalar_ci,
+            "ece": {"lower": 0.05, "upper": 0.15},
+        },
         "seed_macro_f1_sd": 0.01,
         "selection_N_trials": 12,
         "reported_variant_N_trials": 0,
@@ -112,6 +131,7 @@ def test_all_public_assets_generate_from_named_reports(tmp_path):
         "M1_depth1",
         "M1_depth5",
         "M1_refit",
+        "M1_anchor",
         "M2_depth1",
         "M2_depth5",
     }
@@ -269,10 +289,12 @@ def test_all_public_assets_generate_from_named_reports(tmp_path):
     generate_reliability(artifacts, output)
     mechanisms = generate_mechanisms(artifacts, output)
     paired = generate_paired_comparisons(artifacts, output)
+    classification = generate_classification_metrics(artifacts, output)
     generate_compute(artifacts, output)
     generate_audits(artifacts, output)
     markdown_summary(fi, transfer, mechanisms, output)
     assert (output / "RESULTS.md").exists()
     assert len(list((output / "figures").glob("*.png"))) == 8
-    assert len(list((output / "tables").glob("*.csv"))) == 11
+    assert len(list((output / "tables").glob("*.csv"))) == 12
     assert len(paired) == 3408  # 284 paired reports times 12 metric/class rows.
+    assert len(classification) == 1296  # 108 summary reports times 12 rows.
