@@ -14,7 +14,7 @@ class TrainStandardizer:
     fit_split: str = "train"
 
     @classmethod
-    def fit(cls, x: np.ndarray, split: str) -> "TrainStandardizer":
+    def fit(cls, x: np.ndarray, split: str) -> TrainStandardizer:
         if split != "train":
             raise AssertionError("normalization may be fitted on training data only")
         flat = x.reshape(-1, x.shape[-1]).astype(np.float64)
@@ -52,4 +52,3 @@ def assert_split_days(train: set[int], validation: set[int], test: set[int]) -> 
         raise AssertionError("temporal split overlap")
     if max(train) >= min(validation) or max(validation) >= min(test):
         raise AssertionError("splits are not strictly temporal")
-

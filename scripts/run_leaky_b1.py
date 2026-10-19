@@ -7,11 +7,11 @@ from pathlib import Path
 
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+from train_baselines import assemble, fit_model
 
 from lobdl.datasets import fi_economic_arrays
 from lobdl.metrics import classification_metrics
 from lobdl.selection_lock import selection_path, verify_lock
-from train_baselines import assemble, fit_model
 
 
 def main() -> None:
