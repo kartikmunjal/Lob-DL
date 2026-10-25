@@ -1,0 +1,169 @@
+{
+  "status": "all_validation_selections_frozen_before_test",
+  "models": [
+    "B1",
+    "B2",
+    "M1",
+    "M2"
+  ],
+  "horizons": [
+    10,
+    20,
+    50,
+    100
+  ],
+  "selections": {
+    "B1/h10": {
+      "path": "selections\\B1\\h10.json",
+      "sha256": "c08de23ee1eff758ceb685ee64045a69cb78218aa7a54f7e043e6b26e0fdfde4",
+      "selected_trial": 6,
+      "selected_parameters": {
+        "C": 0.05336699231206307
+      }
+    },
+    "B1/h20": {
+      "path": "selections\\B1\\h20.json",
+      "sha256": "8c46bcbcba89ea376f2b2ec7b5204a821c9a7eef6890f10dcbc60b13197cf493",
+      "selected_trial": 5,
+      "selected_parameters": {
+        "C": 0.01519911082952933
+      }
+    },
+    "B1/h50": {
+      "path": "selections\\B1\\h50.json",
+      "sha256": "b5e7b94c2ad20817a9e761bf0aeae24499f874be509ab63a289e7eeebc3ceb6d",
+      "selected_trial": 7,
+      "selected_parameters": {
+        "C": 0.1873817422860383
+      }
+    },
+    "B1/h100": {
+      "path": "selections\\B1\\h100.json",
+      "sha256": "128a1043b1b4b814f311c43d269cc38f6c5e265cc0927a486bddff95bfb461ac",
+      "selected_trial": 9,
+      "selected_parameters": {
+        "C": 2.310129700083158
+      }
+    },
+    "B2/h10": {
+      "path": "selections\\B2\\h10.json",
+      "sha256": "da3c65e1498d2396c884b09cbe75fd34a9b1deebcde57daf7d123dfd073378bc",
+      "selected_trial": 11,
+      "selected_parameters": {
+        "num_leaves": 63,
+        "learning_rate": 0.1,
+        "min_child_samples": 200
+      }
+    },
+    "B2/h20": {
+      "path": "selections\\B2\\h20.json",
+      "sha256": "0b5be46aeda61b1f1502761329b856640c3213b2d162afb456a9452347b3054d",
+      "selected_trial": 8,
+      "selected_parameters": {
+        "num_leaves": 63,
+        "learning_rate": 0.03,
+        "min_child_samples": 400
+      }
+    },
+    "B2/h50": {
+      "path": "selections\\B2\\h50.json",
+      "sha256": "ca5baf9a5331b72b974e2dcf79fd8bde1027f7818c95ab66b9a523cfb640d260",
+      "selected_trial": 7,
+      "selected_parameters": {
+        "num_leaves": 63,
+        "learning_rate": 0.03,
+        "min_child_samples": 200
+      }
+    },
+    "B2/h100": {
+      "path": "selections\\B2\\h100.json",
+      "sha256": "a6736a6ac1598ad7fef19409a1efa870c29a49cb33998491167536a6077ffe34",
+      "selected_trial": 9,
+      "selected_parameters": {
+        "num_leaves": 63,
+        "learning_rate": 0.05,
+        "min_child_samples": 200
+      }
+    },
+    "M1/h10": {
+      "path": "selections\\M1\\h10.json",
+      "sha256": "ab34e23e744eb385fd84fe864515d2a79cf594bc646a8403f666717575c5296e",
+      "selected_trial": 12,
+      "selected_parameters": {
+        "learning_rate": 0.01,
+        "epsilon": 1.0,
+        "dropout": 0.2
+      }
+    },
+    "M1/h20": {
+      "path": "selections\\M1\\h20.json",
+      "sha256": "8214f74f3c9ba147b4224f3dcd7d6931de55f4f20e4e771425119061ba2d80a0",
+      "selected_trial": 11,
+      "selected_parameters": {
+        "learning_rate": 0.01,
+        "epsilon": 1.0,
+        "dropout": 0.0
+      }
+    },
+    "M1/h50": {
+      "path": "selections\\M1\\h50.json",
+      "sha256": "a523a9331afc8c68fe0766ae9f551efba1341c9bad91367fd840352b149a4cdb",
+      "selected_trial": 6,
+      "selected_parameters": {
+        "learning_rate": 0.001,
+        "epsilon": 1e-08,
+        "dropout": 0.2
+      }
+    },
+    "M1/h100": {
+      "path": "selections\\M1\\h100.json",
+      "sha256": "8b7f0075d69909b442a238d11a7ef2b80233c6a3554bad23ae670ce239553e7e",
+      "selected_trial": 5,
+      "selected_parameters": {
+        "learning_rate": 0.001,
+        "epsilon": 1e-08,
+        "dropout": 0.0
+      }
+    },
+    "M2/h10": {
+      "path": "selections\\M2\\h10.json",
+      "sha256": "62efb836e8181a8b6f2adae0aaa3ce0f8b1bd24ab886e335cba5a657d8b3300c",
+      "selected_trial": 11,
+      "selected_parameters": {
+        "learning_rate": 0.003,
+        "layers": 3,
+        "dropout": 0.1
+      }
+    },
+    "M2/h20": {
+      "path": "selections\\M2\\h20.json",
+      "sha256": "ed2f75fb3e64239fab2391c6d18ed9be065feaf6ab406aa00c1a47bf3ef78f88",
+      "selected_trial": 7,
+      "selected_parameters": {
+        "learning_rate": 0.001,
+        "layers": 3,
+        "dropout": 0.1
+      }
+    },
+    "M2/h50": {
+      "path": "selections\\M2\\h50.json",
+      "sha256": "6e5cd38cde96de5c4571950712646281119dbc0c30202224de3f8e52619e940e",
+      "selected_trial": 9,
+      "selected_parameters": {
+        "learning_rate": 0.003,
+        "layers": 2,
+        "dropout": 0.1
+      }
+    },
+    "M2/h100": {
+      "path": "selections\\M2\\h100.json",
+      "sha256": "ed3a157e5c5512436084a5623d005024832e5dd5b0073896b7592f7f0498efcc",
+      "selected_trial": 7,
+      "selected_parameters": {
+        "learning_rate": 0.001,
+        "layers": 3,
+        "dropout": 0.1
+      }
+    }
+  }
+}

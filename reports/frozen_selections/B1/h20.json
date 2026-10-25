@@ -1,0 +1,179 @@
+{
+  "model": "B1",
+  "horizon": 20,
+  "selection_N_trials": 12,
+  "selection_seeds": [],
+  "ranking": "mean_validation_macro_f1_exact_tie_rule",
+  "selected": {
+    "trial": 5,
+    "parameters": {
+      "C": 0.01519911082952933
+    },
+    "validation_macro_f1_by_replication": [
+      0.6697426939027756
+    ],
+    "mean_validation_macro_f1": 0.6697426939027756,
+    "sd_validation_macro_f1": 0.0,
+    "parameter_count": 90,
+    "best_epochs": []
+  },
+  "candidates": [
+    {
+      "trial": 1,
+      "parameters": {
+        "C": 0.0001
+      },
+      "validation_macro_f1_by_replication": [
+        0.6335717941505412
+      ],
+      "mean_validation_macro_f1": 0.6335717941505412,
+      "sd_validation_macro_f1": 0.0,
+      "parameter_count": 90,
+      "best_epochs": []
+    },
+    {
+      "trial": 2,
+      "parameters": {
+        "C": 0.0003511191734215131
+      },
+      "validation_macro_f1_by_replication": [
+        0.6549927143205052
+      ],
+      "mean_validation_macro_f1": 0.6549927143205052,
+      "sd_validation_macro_f1": 0.0,
+      "parameter_count": 90,
+      "best_epochs": []
+    },
+    {
+      "trial": 3,
+      "parameters": {
+        "C": 0.0012328467394420659
+      },
+      "validation_macro_f1_by_replication": [
+        0.6651315070760909
+      ],
+      "mean_validation_macro_f1": 0.6651315070760909,
+      "sd_validation_macro_f1": 0.0,
+      "parameter_count": 90,
+      "best_epochs": []
+    },
+    {
+      "trial": 4,
+      "parameters": {
+        "C": 0.004328761281083057
+      },
+      "validation_macro_f1_by_replication": [
+        0.6689947098953751
+      ],
+      "mean_validation_macro_f1": 0.6689947098953751,
+      "sd_validation_macro_f1": 0.0,
+      "parameter_count": 90,
+      "best_epochs": []
+    },
+    {
+      "trial": 5,
+      "parameters": {
+        "C": 0.01519911082952933
+      },
+      "validation_macro_f1_by_replication": [
+        0.6697426939027756
+      ],
+      "mean_validation_macro_f1": 0.6697426939027756,
+      "sd_validation_macro_f1": 0.0,
+      "parameter_count": 90,
+      "best_epochs": []
+    },
+    {
+      "trial": 6,
+      "parameters": {
+        "C": 0.05336699231206307
+      },
+      "validation_macro_f1_by_replication": [
+        0.6693108728735377
+      ],
+      "mean_validation_macro_f1": 0.6693108728735377,
+      "sd_validation_macro_f1": 0.0,
+      "parameter_count": 90,
+      "best_epochs": []
+    },
+    {
+      "trial": 7,
+      "parameters": {
+        "C": 0.1873817422860383
+      },
+      "validation_macro_f1_by_replication": [
+        0.6693702618232482
+      ],
+      "mean_validation_macro_f1": 0.6693702618232482,
+      "sd_validation_macro_f1": 0.0,
+      "parameter_count": 90,
+      "best_epochs": []
+    },
+    {
+      "trial": 8,
+      "parameters": {
+        "C": 0.6579332246575675
+      },
+      "validation_macro_f1_by_replication": [
+        0.6694067482703616
+      ],
+      "mean_validation_macro_f1": 0.6694067482703616,
+      "sd_validation_macro_f1": 0.0,
+      "parameter_count": 90,
+      "best_epochs": []
+    },
+    {
+      "trial": 9,
+      "parameters": {
+        "C": 2.310129700083158
+      },
+      "validation_macro_f1_by_replication": [
+        0.6693318843925917
+      ],
+      "mean_validation_macro_f1": 0.6693318843925917,
+      "sd_validation_macro_f1": 0.0,
+      "parameter_count": 90,
+      "best_epochs": []
+    },
+    {
+      "trial": 10,
+      "parameters": {
+        "C": 8.111308307896856
+      },
+      "validation_macro_f1_by_replication": [
+        0.6693821326174277
+      ],
+      "mean_validation_macro_f1": 0.6693821326174277,
+      "sd_validation_macro_f1": 0.0,
+      "parameter_count": 90,
+      "best_epochs": []
+    },
+    {
+      "trial": 11,
+      "parameters": {
+        "C": 28.48035868435799
+      },
+      "validation_macro_f1_by_replication": [
+        0.6693821326174277
+      ],
+      "mean_validation_macro_f1": 0.6693821326174277,
+      "sd_validation_macro_f1": 0.0,
+      "parameter_count": 90,
+      "best_epochs": []
+    },
+    {
+      "trial": 12,
+      "parameters": {
+        "C": 100.0
+      },
+      "validation_macro_f1_by_replication": [
+        0.6693821326174277
+      ],
+      "mean_validation_macro_f1": 0.6693821326174277,
+      "sd_validation_macro_f1": 0.0,
+      "parameter_count": 90,
+      "best_epochs": []
+    }
+  ],
+  "test_data_loaded": false
+}

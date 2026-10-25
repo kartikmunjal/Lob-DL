@@ -1,0 +1,287 @@
+{
+  "model": "B2",
+  "horizon": 20,
+  "selection_N_trials": 12,
+  "selection_seeds": [
+    5,
+    7,
+    13
+  ],
+  "ranking": "mean_validation_macro_f1_exact_tie_rule",
+  "selected": {
+    "trial": 8,
+    "parameters": {
+      "num_leaves": 63,
+      "learning_rate": 0.03,
+      "min_child_samples": 400
+    },
+    "validation_macro_f1_by_replication": [
+      0.6945747488056395,
+      0.6956376576390265,
+      0.6944423790088078
+    ],
+    "mean_validation_macro_f1": 0.6948849284844912,
+    "sd_validation_macro_f1": 0.0005349961531598932,
+    "parameter_count": 38934,
+    "best_epochs": [
+      201,
+      192,
+      206
+    ]
+  },
+  "candidates": [
+    {
+      "trial": 1,
+      "parameters": {
+        "num_leaves": 31,
+        "learning_rate": 0.03,
+        "min_child_samples": 200
+      },
+      "validation_macro_f1_by_replication": [
+        0.6946789064686031,
+        0.6938028279330869,
+        0.693985660266882
+      ],
+      "mean_validation_macro_f1": 0.6941557982228573,
+      "sd_validation_macro_f1": 0.00037734916911320653,
+      "parameter_count": 37479,
+      "best_epochs": [
+        341,
+        320,
+        403
+      ]
+    },
+    {
+      "trial": 2,
+      "parameters": {
+        "num_leaves": 31,
+        "learning_rate": 0.03,
+        "min_child_samples": 400
+      },
+      "validation_macro_f1_by_replication": [
+        0.6945531753192657,
+        0.6948761738816439,
+        0.6941886043878475
+      ],
+      "mean_validation_macro_f1": 0.694539317862919,
+      "sd_validation_macro_f1": 0.0002808700458956969,
+      "parameter_count": 32085,
+      "best_epochs": [
+        345,
+        214,
+        254
+      ]
+    },
+    {
+      "trial": 3,
+      "parameters": {
+        "num_leaves": 31,
+        "learning_rate": 0.05,
+        "min_child_samples": 200
+      },
+      "validation_macro_f1_by_replication": [
+        0.6935313335173235,
+        0.6930638744500289,
+        0.6931333543201683
+      ],
+      "mean_validation_macro_f1": 0.6932428540958403,
+      "sd_validation_macro_f1": 0.00020594844913738894,
+      "parameter_count": 21483,
+      "best_epochs": [
+        195,
+        231,
+        161
+      ]
+    },
+    {
+      "trial": 4,
+      "parameters": {
+        "num_leaves": 31,
+        "learning_rate": 0.05,
+        "min_child_samples": 400
+      },
+      "validation_macro_f1_by_replication": [
+        0.6940832831652526,
+        0.6933975811326732,
+        0.6943156439315592
+      ],
+      "mean_validation_macro_f1": 0.6939321694098283,
+      "sd_validation_macro_f1": 0.00038973183171970194,
+      "parameter_count": 24831,
+      "best_epochs": [
+        267,
+        224,
+        188
+      ]
+    },
+    {
+      "trial": 5,
+      "parameters": {
+        "num_leaves": 31,
+        "learning_rate": 0.1,
+        "min_child_samples": 200
+      },
+      "validation_macro_f1_by_replication": [
+        0.6939061966968282,
+        0.6934861845249101,
+        0.6938620934349092
+      ],
+      "mean_validation_macro_f1": 0.6937514915522159,
+      "sd_validation_macro_f1": 0.00018846244273300675,
+      "parameter_count": 10602,
+      "best_epochs": [
+        114,
+        95,
+        112
+      ]
+    },
+    {
+      "trial": 6,
+      "parameters": {
+        "num_leaves": 31,
+        "learning_rate": 0.1,
+        "min_child_samples": 400
+      },
+      "validation_macro_f1_by_replication": [
+        0.6939373743776169,
+        0.6949038919902639,
+        0.6937443772406041
+      ],
+      "mean_validation_macro_f1": 0.6941952145361617,
+      "sd_validation_macro_f1": 0.0005072670395944903,
+      "parameter_count": 12369,
+      "best_epochs": [
+        133,
+        100,
+        97
+      ]
+    },
+    {
+      "trial": 7,
+      "parameters": {
+        "num_leaves": 63,
+        "learning_rate": 0.03,
+        "min_child_samples": 200
+      },
+      "validation_macro_f1_by_replication": [
+        0.6945561315721203,
+        0.6941970590805187,
+        0.6938613141550004
+      ],
+      "mean_validation_macro_f1": 0.6942048349358797,
+      "sd_validation_macro_f1": 0.00028371130717476844,
+      "parameter_count": 36099,
+      "best_epochs": [
+        179,
+        191,
+        170
+      ]
+    },
+    {
+      "trial": 8,
+      "parameters": {
+        "num_leaves": 63,
+        "learning_rate": 0.03,
+        "min_child_samples": 400
+      },
+      "validation_macro_f1_by_replication": [
+        0.6945747488056395,
+        0.6956376576390265,
+        0.6944423790088078
+      ],
+      "mean_validation_macro_f1": 0.6948849284844912,
+      "sd_validation_macro_f1": 0.0005349961531598932,
+      "parameter_count": 38934,
+      "best_epochs": [
+        201,
+        192,
+        206
+      ]
+    },
+    {
+      "trial": 9,
+      "parameters": {
+        "num_leaves": 63,
+        "learning_rate": 0.05,
+        "min_child_samples": 200
+      },
+      "validation_macro_f1_by_replication": [
+        0.6942229777032489,
+        0.695040716641912,
+        0.6943476461394721
+      ],
+      "mean_validation_macro_f1": 0.6945371134948778,
+      "sd_validation_macro_f1": 0.00035971993923491536,
+      "parameter_count": 27027,
+      "best_epochs": [
+        143,
+        108,
+        111
+      ]
+    },
+    {
+      "trial": 10,
+      "parameters": {
+        "num_leaves": 63,
+        "learning_rate": 0.05,
+        "min_child_samples": 400
+      },
+      "validation_macro_f1_by_replication": [
+        0.6945888359432301,
+        0.6949811629473848,
+        0.6945427427471662
+      ],
+      "mean_validation_macro_f1": 0.6947042472125937,
+      "sd_validation_macro_f1": 0.00019671110596000254,
+      "parameter_count": 24570,
+      "best_epochs": [
+        130,
+        127,
+        96
+      ]
+    },
+    {
+      "trial": 11,
+      "parameters": {
+        "num_leaves": 63,
+        "learning_rate": 0.1,
+        "min_child_samples": 200
+      },
+      "validation_macro_f1_by_replication": [
+        0.6942100612507281,
+        0.6936974751620458,
+        0.6939232109669096
+      ],
+      "mean_validation_macro_f1": 0.6939435824598945,
+      "sd_validation_macro_f1": 0.00020975759481281706,
+      "parameter_count": 10017,
+      "best_epochs": [
+        53,
+        49,
+        48
+      ]
+    },
+    {
+      "trial": 12,
+      "parameters": {
+        "num_leaves": 63,
+        "learning_rate": 0.1,
+        "min_child_samples": 400
+      },
+      "validation_macro_f1_by_replication": [
+        0.69447691895923,
+        0.6947520855459355,
+        0.6941092725699205
+      ],
+      "mean_validation_macro_f1": 0.694446092358362,
+      "sd_validation_macro_f1": 0.0002633310211174234,
+      "parameter_count": 9828,
+      "best_epochs": [
+        52,
+        45,
+        48
+      ]
+    }
+  ],
+  "test_data_loaded": false
+}
