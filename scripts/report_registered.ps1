@@ -47,4 +47,5 @@ foreach ($horizon in $horizons) {
 }
 
 Invoke-RegisteredPython scripts/mechanism_analysis.py --data $DataRoot `
-  --artifacts $Artifacts --replicates $Replicates
+  --artifacts $Artifacts --output (Join-Path $Artifacts "reports/mechanisms") `
+  --replicates $Replicates
