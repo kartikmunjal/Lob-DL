@@ -563,6 +563,11 @@ def generate_compute(artifacts: Path, output: Path) -> list[dict]:
 
 def generate_audits(artifacts: Path, output: Path) -> None:
     fi = read_json(artifacts / "audit" / "fi2010.json")
+    agreement = fi["documented_formula_agreement"]
+    if agreement.get("role") != "data_integrity_diagnostic_only":
+        raise ValueError("FI label reconstruction is not marked diagnostic-only")
+    if agreement.get("changes_primary_shipped_targets") is not False:
+        raise ValueError("FI label reconstruction must not replace shipped targets")
     fi_rows = [
         {
             "horizon": int(horizon),
@@ -570,7 +575,7 @@ def generate_audits(artifacts: Path, output: Path) -> None:
             "eligible_rows": values["n"],
             "agreement_rate": values["rate"],
         }
-        for horizon, values in fi["label_agreement"].items()
+        for horizon, values in agreement["by_horizon"].items()
         if int(horizon) in HORIZONS
     ]
     write_csv(output / "tables" / "fi_label_formula_agreement.csv", fi_rows)

@@ -166,9 +166,13 @@ def test_all_public_assets_generate_from_named_reports(tmp_path):
     write(
         artifacts / "audit" / "fi2010.json",
         {
-            "label_agreement": {
-                str(horizon): {"agree": 8, "n": 10, "rate": 0.8}
-                for horizon in HORIZONS
+            "documented_formula_agreement": {
+                "role": "data_integrity_diagnostic_only",
+                "changes_primary_shipped_targets": False,
+                "by_horizon": {
+                    str(horizon): {"agree": 8, "n": 10, "rate": 0.8}
+                    for horizon in HORIZONS
+                },
             }
         },
     )
