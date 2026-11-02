@@ -1,0 +1,87 @@
+{
+  "system_a": "M1",
+  "system_b": "M1_anchor",
+  "system_a_N_trials": {
+    "selection_N_trials": 12,
+    "reported_variant_N_trials": 0
+  },
+  "system_b_N_trials": {
+    "selection_N_trials": 12,
+    "reported_variant_N_trials": 1
+  },
+  "horizon": 20,
+  "bootstrap": {
+    "type": "paired_moving_block",
+    "block_length": 100,
+    "replicates": 2000,
+    "difference_order": "system_a_minus_system_b"
+  },
+  "metric_differences": {
+    "precision": {
+      "difference": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "lower": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "upper": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "recall": {
+      "difference": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "lower": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "upper": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "f1": {
+      "difference": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "lower": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "upper": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "macro_f1": {
+      "difference": 0.0,
+      "lower": 0.0,
+      "upper": 0.0
+    },
+    "mcc": {
+      "difference": 0.0,
+      "lower": 0.0,
+      "upper": 0.0
+    },
+    "ece": {
+      "difference": 0.0,
+      "lower": 0.0,
+      "upper": 0.0
+    }
+  }
+}

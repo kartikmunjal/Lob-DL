@@ -1,0 +1,5 @@
+horizon,published_f1,study_macro_f1,study_ci95_lower,study_ci95_upper,difference_percentage_points,selection_N_trials,reported_variant_N_trials,status
+10,0.8340000000000001,0.7054924812703764,0.703522895659792,0.7075480928786143,-12.850751872962363,12,1,contextual_only_protocols_differ
+20,0.7282,0.6203695511549486,0.6185929227454895,0.622478419132999,-10.78304488450513,12,1,contextual_only_protocols_differ
+50,0.8035,0.752411216397692,0.7502282623895227,0.7547998346428065,-5.10887836023079,12,1,contextual_only_protocols_differ
+100,,,,,,,,paper_setup_2_not_reported

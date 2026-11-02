@@ -1,0 +1,88 @@
+{
+  "system_a": "B0_persistence",
+  "system_b": "M1",
+  "system_a_N_trials": {
+    "selection_N_trials": 0,
+    "reported_variant_N_trials": 0
+  },
+  "system_b_N_trials": {
+    "selection_N_trials": 12,
+    "reported_variant_N_trials": 0
+  },
+  "horizon": 10,
+  "label_variant": "fixed",
+  "bootstrap": {
+    "type": "paired_moving_block_within_ticker_and_seed",
+    "block_length": 100,
+    "replicates": 2000,
+    "difference_order": "system_a_minus_system_b"
+  },
+  "metric_differences": {
+    "precision": {
+      "difference": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "lower": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "upper": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "recall": {
+      "difference": [
+        0.0,
+        -0.14886092440707077,
+        0.0
+      ],
+      "lower": [
+        0.0,
+        -0.15000053297012406,
+        0.0
+      ],
+      "upper": [
+        0.0,
+        -0.14758283244011483,
+        0.0
+      ]
+    },
+    "f1": {
+      "difference": [
+        0.0,
+        -0.08941131875250974,
+        0.0
+      ],
+      "lower": [
+        0.0,
+        -0.09011075876754808,
+        0.0
+      ],
+      "upper": [
+        0.0,
+        -0.08864911167675729,
+        0.0
+      ]
+    },
+    "macro_f1": {
+      "difference": -0.029803772917503246,
+      "lower": -0.030036919589182656,
+      "upper": -0.029549703892252414
+    },
+    "mcc": {
+      "difference": 0.0,
+      "lower": 0.0,
+      "upper": 0.0
+    },
+    "ece": {
+      "difference": 0.22807031305309325,
+      "lower": 0.22619887613271036,
+      "upper": 0.22936564073040785
+    }
+  }
+}

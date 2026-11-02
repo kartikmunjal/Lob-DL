@@ -1,0 +1,73 @@
+{
+  "source": {
+    "title": "DeepLOB - Deep Convolutional Neural Networks for Limit Order Books",
+    "authors": [
+      "Zihao Zhang",
+      "Stefan Zohren",
+      "Stephen Roberts"
+    ],
+    "arxiv": "1808.03668",
+    "url": "https://arxiv.org/abs/1808.03668"
+  },
+  "metric_note": "The paper's reported F1 is contextual; the study reports macro-F1.",
+  "comparability": "contextual_anchor_not_exact_reproduction",
+  "protocol_differences": {
+    "paper_batch_size": 32,
+    "study_batch_size": 64,
+    "paper_normalization": "z_score",
+    "study_normalization": "decimal_precision",
+    "paper_validation_metric": "accuracy",
+    "study_validation_metric": "macro_f1",
+    "paper_patience": 20,
+    "study_patience": 5,
+    "paper_approximate_epochs": 100,
+    "study_max_epochs": 40,
+    "paper_approximate_parameters": 60000,
+    "released_pytorch_and_study_parameters": 143907,
+    "study_split": "days_1_to_6_train_day_7_validation_days_8_to_10_test"
+  },
+  "rows": [
+    {
+      "horizon": 10,
+      "published_f1": 0.8340000000000001,
+      "study_macro_f1": 0.7054924812703764,
+      "study_ci95_lower": 0.703522895659792,
+      "study_ci95_upper": 0.7075480928786143,
+      "difference_percentage_points": -12.850751872962363,
+      "selection_N_trials": 12,
+      "reported_variant_N_trials": 1,
+      "status": "contextual_only_protocols_differ"
+    },
+    {
+      "horizon": 20,
+      "published_f1": 0.7282,
+      "study_macro_f1": 0.6203695511549486,
+      "study_ci95_lower": 0.6185929227454895,
+      "study_ci95_upper": 0.622478419132999,
+      "difference_percentage_points": -10.78304488450513,
+      "selection_N_trials": 12,
+      "reported_variant_N_trials": 1,
+      "status": "contextual_only_protocols_differ"
+    },
+    {
+      "horizon": 50,
+      "published_f1": 0.8035,
+      "study_macro_f1": 0.752411216397692,
+      "study_ci95_lower": 0.7502282623895227,
+      "study_ci95_upper": 0.7547998346428065,
+      "difference_percentage_points": -5.10887836023079,
+      "selection_N_trials": 12,
+      "reported_variant_N_trials": 1,
+      "status": "contextual_only_protocols_differ"
+    },
+    {
+      "horizon": 100,
+      "published_f1": null,
+      "study_macro_f1": null,
+      "study_ci95_lower": null,
+      "study_ci95_upper": null,
+      "difference_percentage_points": null,
+      "status": "paper_setup_2_not_reported"
+    }
+  ]
+}
