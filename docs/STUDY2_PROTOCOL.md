@@ -31,10 +31,15 @@ data whose splits and analysis rules are committed here before download.
 - Target: forward-mean relative mid-price move at the registered horizon, in basis
   points, as already computed by `fi_economic_arrays`.
 - Metrics: Spearman information coefficient within each cluster, summarized by the
-  mean over clusters with the A1 cluster bootstrap; out-of-sample R^2 of a
-  no-intercept linear map fitted on validation predictions only; mark-out curve of
+  mean over clusters with the A1 cluster bootstrap; out-of-sample R^2 (zero-forecast
+  benchmark) of a no-intercept linear map from signal to bps; mark-out curve of
   signed move conditional on signal deciles, compared with the contemporaneous
   half-spread.
+- Study 1 did not retain validation predictions, so the R^2 slope and decile edges
+  are cross-fitted: leave-one-test-day-out on FI-2010 (3 folds) and
+  leave-one-ticker-out on LOBSTER (5 folds). No row is scored by a map or edge fitted
+  on its own fold. Metrics are computed per fitted seed and averaged over seeds.
+  (Clarification committed 2026-11-03, before any A2 computation.)
 
 ### A3. Market-invariant transfer representation
 
