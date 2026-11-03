@@ -17,6 +17,7 @@ from scripts.generate_report_assets import (
     generate_reliability,
     generate_transfer,
     markdown_summary,
+    update_readme_findings,
 )
 
 
@@ -92,7 +93,7 @@ def transfer_summary() -> dict:
 
 
 def paired_summary(system_a: str, system_b: str, horizon: int) -> dict:
-    scalar = {"difference": 0.01, "lower": -0.01, "upper": 0.03}
+    scalar = {"difference": 0.01, "lower": 0.005, "upper": 0.03}
     vector = {
         "difference": [0.01, 0.0, -0.01],
         "lower": [-0.01, -0.02, -0.03],
@@ -297,6 +298,16 @@ def test_all_public_assets_generate_from_named_reports(tmp_path):
     generate_compute(artifacts, output)
     generate_audits(artifacts, output)
     markdown_summary(fi, transfer, mechanisms, output)
+    readme = tmp_path / "README.md"
+    readme.write_text("# Study\n\n## Status\n\nComplete.\n", encoding="utf-8")
+    update_readme_findings(readme, fi, transfer, paired)
+    generated_readme = readme.read_text(encoding="utf-8")
+    assert "## Key findings" in generated_readme
+    assert "test-window sampling uncertainty" in generated_readme
+    assert "reports/generated/figures/fi_primary_macro_f1.png" in generated_readme
+    assert "## Reproduce" in generated_readme
+    update_readme_findings(readme, fi, transfer, paired)
+    assert readme.read_text(encoding="utf-8") == generated_readme
     assert (output / "RESULTS.md").exists()
     assert len(list((output / "figures").glob("*.png"))) == 8
     assert len(list((output / "tables").glob("*.csv"))) == 12

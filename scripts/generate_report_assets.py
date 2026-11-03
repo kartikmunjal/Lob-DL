@@ -39,6 +39,8 @@ PRIMARY_REPORT_SYSTEMS = (
     "M1_anchor",
     "M2",
 )
+README_FINDINGS_BEGIN = "<!-- BEGIN GENERATED KEY FINDINGS -->"
+README_FINDINGS_END = "<!-- END GENERATED KEY FINDINGS -->"
 
 
 def read_json(path: Path) -> dict:
@@ -690,10 +692,271 @@ def markdown_summary(
     (output / "RESULTS.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def select_metric(
+    rows: list[dict], dataset: str, system: str, horizon: int
+) -> dict:
+    matches = [
+        row
+        for row in rows
+        if row["dataset"] == dataset
+        and row["system"] == system
+        and row["horizon"] == horizon
+    ]
+    if len(matches) != 1:
+        raise ValueError(
+            f"expected one metric row for {dataset}/{system}/h{horizon}, got {len(matches)}"
+        )
+    return matches[0]
+
+
+def paired_macro_difference(
+    rows: list[dict], dataset: str, system_a: str, system_b: str, horizon: int
+) -> dict:
+    matches = [
+        row
+        for row in rows
+        if row["dataset"] == dataset
+        and row["horizon"] == horizon
+        and row["metric"] == "macro_f1"
+        and row["class"] == "all"
+        and {row["system_a"], row["system_b"]} == {system_a, system_b}
+    ]
+    if len(matches) != 1:
+        raise ValueError(
+            f"expected one paired row for {dataset}/{system_a}/{system_b}/h{horizon}, "
+            f"got {len(matches)}"
+        )
+    row = matches[0]
+    if row["system_a"] == system_a:
+        return {
+            "difference": row["difference"],
+            "lower": row["ci95_lower"],
+            "upper": row["ci95_upper"],
+        }
+    return {
+        "difference": -row["difference"],
+        "lower": -row["ci95_upper"],
+        "upper": -row["ci95_lower"],
+    }
+
+
+def update_readme_findings(
+    readme: Path,
+    fi_rows: list[dict],
+    transfer_rows: list[dict],
+    paired_rows: list[dict],
+) -> None:
+    fi = {
+        (system, horizon): select_metric(fi_rows, "FI-2010", system, horizon)
+        for system in (
+            "B0 persistence",
+            "B2 LightGBM",
+            "M1 DeepLOB",
+            "M2 transformer",
+        )
+        for horizon in HORIZONS
+    }
+    transfer = {
+        (labels, system, horizon): select_metric(
+            transfer_rows, f"LOBSTER_{labels}", system, horizon
+        )
+        for labels in ("fixed", "matched")
+        for system in (
+            "B0 majority",
+            "B0 persistence",
+            "B1 logistic",
+            "B2 LightGBM",
+            "M1 DeepLOB",
+            "M2 transformer",
+        )
+        for horizon in HORIZONS
+    }
+
+    deep_comparisons = [
+        paired_macro_difference(paired_rows, dataset, "B2", deep, horizon)
+        for dataset in ("FI-2010_primary", "LOBSTER_matched")
+        for deep in ("M1", "M2")
+        for horizon in HORIZONS
+    ]
+    if not all(item["lower"] > 0.0 for item in deep_comparisons):
+        raise ValueError(
+            "finding 4 is not supported by every registered paired macro-F1 interval"
+        )
+    fixed_majority_comparisons = [
+        paired_macro_difference(
+            paired_rows, "LOBSTER_fixed", "B0_majority", trained, horizon
+        )
+        for trained in ("B1", "B2", "M1", "M2")
+        for horizon in (10, 20)
+    ]
+    if not all(item["lower"] > 0.0 for item in fixed_majority_comparisons):
+        raise ValueError(
+            "finding 2 is not supported by every registered paired macro-F1 interval"
+        )
+
+    fixed_trained = [
+        transfer[("fixed", system, horizon)]["macro_f1"]
+        for system in ("B1 logistic", "B2 LightGBM", "M1 DeepLOB", "M2 transformer")
+        for horizon in HORIZONS
+    ]
+    fixed_early = [
+        transfer[("fixed", system, horizon)]["macro_f1"]
+        for system in ("B1 logistic", "B2 LightGBM", "M1 DeepLOB", "M2 transformer")
+        for horizon in (10, 20)
+    ]
+    fixed_majority = transfer[("fixed", "B0 majority", 10)]["macro_f1"]
+    matched_b2 = [
+        transfer[("matched", "B2 LightGBM", horizon)]["macro_f1"]
+        for horizon in HORIZONS
+    ]
+    matched_persistence = [
+        transfer[("matched", "B0 persistence", horizon)]["macro_f1"]
+        for horizon in HORIZONS
+    ]
+    matched_h10_b2 = transfer[("matched", "B2 LightGBM", 10)]["macro_f1"]
+    matched_h10_persistence = transfer[("matched", "B0 persistence", 10)]["macro_f1"]
+    matched_h50_gap = paired_macro_difference(
+        paired_rows, "LOBSTER_matched", "B2", "B0_persistence", 50
+    )
+    fi_h10_gap = paired_macro_difference(
+        paired_rows, "FI-2010_primary", "B2", "B0:persistence", 10
+    )
+
+    lines = [
+        README_FINDINGS_BEGIN,
+        "## Key findings",
+        "",
+        (
+            "All numbers are macro-F1 from the registered reports. Full tables, per-class "
+            "metrics, and paired comparisons are in "
+            "[`reports/generated/`](reports/generated/) and "
+            "[`reports/generated/tables/`](reports/generated/tables/)."
+        ),
+        "",
+        (
+            "`Fixed` retains the FI-2010 threshold unchanged on LOBSTER; `matched` uses the "
+            "preregistered per-ticker threshold selection that matches FI-2010 training-class "
+            "proportions."
+        ),
+        "",
+        (
+            "The 95% intervals measure test-window sampling uncertainty using moving blocks "
+            "within stock-day and fitted seed, pooled across seeds; seed-to-seed standard "
+            "deviation is reported separately."
+        ),
+        "",
+        (
+            "**1. A tuned gradient-boosted baseline beats both deep models on FI-2010 "
+            "at every horizon.**"
+        ),
+        "",
+        "| Horizon | Persistence | LightGBM | DeepLOB | Transformer |",
+        "|---|---:|---:|---:|---:|",
+    ]
+    for horizon in HORIZONS:
+        lines.append(
+            f"| {horizon} | {fi[('B0 persistence', horizon)]['macro_f1']:.3f} | "
+            f"{fi[('B2 LightGBM', horizon)]['macro_f1']:.3f} | "
+            f"{fi[('M1 DeepLOB', horizon)]['macro_f1']:.3f} | "
+            f"{fi[('M2 transformer', horizon)]['macro_f1']:.3f} |"
+        )
+    h10_persistence = fi[("B0 persistence", 10)]["macro_f1"]
+    h10_m1 = fi[("M1 DeepLOB", 10)]["macro_f1"]
+    lines.extend(
+        [
+            "",
+            (
+                f"At horizon 10, persistence alone is {h10_persistence:.3f}. LightGBM adds "
+                f"{fi_h10_gap['difference']:.3f} over it in the registered paired comparison "
+                f"(95% CI [{fi_h10_gap['lower']:.3f}, {fi_h10_gap['upper']:.3f}]), while "
+                f"DeepLOB is {h10_m1:.3f}."
+            ),
+            "",
+            "**2. Zero-shot transfer to LOBSTER with fixed labels collapses to near chance.**",
+            "",
+            (
+                f"No trained model exceeds the majority baseline at horizons 10 and 20 "
+                f"(best trained model: {max(fixed_early):.3f}; majority: {fixed_majority:.3f}). "
+                f"Across all four horizons, trained-model point estimates range from "
+                f"{min(fixed_trained):.3f} to {max(fixed_trained):.3f}."
+            ),
+            "",
+            "**3. With matched labels, signal reappears but stays modest.**",
+            "",
+            (
+                f"LightGBM ranges from {min(matched_b2):.3f} to {max(matched_b2):.3f}, "
+                f"against persistence from {min(matched_persistence):.3f} to "
+                f"{max(matched_persistence):.3f}. At horizon 10 their point estimates are "
+                f"{matched_h10_b2:.3f} and {matched_h10_persistence:.3f}. At horizon 50, the "
+                f"registered paired LightGBM-minus-persistence difference is "
+                f"{matched_h50_gap['difference']:.3f} (95% CI "
+                f"[{matched_h50_gap['lower']:.3f}, {matched_h50_gap['upper']:.3f}])."
+            ),
+            "",
+            "**4. Model complexity did not buy transfer in the tested comparisons.**",
+            "",
+            (
+                "For FI-2010 primary and LOBSTER matched-label transfer, every registered "
+                "paired macro-F1 comparison favored LightGBM over DeepLOB and the transformer "
+                "at each tested horizon. This statement does not extend beyond these datasets, "
+                "label variants, models, or horizons."
+            ),
+            "",
+            (
+                "This repository makes no alpha or tradability claim. Results describe "
+                "predictive benchmarking under the frozen protocol only."
+            ),
+            "",
+            "### Figures",
+            "",
+            (
+                "![FI-2010 macro-F1 by horizon]"
+                "(reports/generated/figures/fi_primary_macro_f1.png)"
+            ),
+            "",
+            (
+                "![Registered mechanical explanation]"
+                "(reports/generated/figures/fi_mechanical_explanation.png)"
+            ),
+            "",
+            "## Reproduce",
+            "",
+            "Regenerate the public tables, figures, summary, and this findings block:",
+            "",
+            "```bash",
+            (
+                "python scripts/generate_report_assets.py --artifacts artifacts "
+                "--output reports/generated"
+            ),
+            "```",
+            "",
+            "Check the complete registered publication bundle:",
+            "",
+            "```bash",
+            "python scripts/verify_study_complete.py --artifacts artifacts --reports reports",
+            "```",
+            README_FINDINGS_END,
+        ]
+    )
+    block = "\n".join(lines)
+    text = readme.read_text(encoding="utf-8").rstrip()
+    if README_FINDINGS_BEGIN in text or README_FINDINGS_END in text:
+        if text.count(README_FINDINGS_BEGIN) != 1 or text.count(README_FINDINGS_END) != 1:
+            raise ValueError("README generated-findings markers are malformed")
+        prefix, remainder = text.split(README_FINDINGS_BEGIN, 1)
+        _, suffix = remainder.split(README_FINDINGS_END, 1)
+        text = prefix.rstrip() + "\n\n" + block + suffix
+    else:
+        text += "\n\n" + block
+    with readme.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(text.rstrip() + "\n")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Regenerate every public table and figure")
     parser.add_argument("--artifacts", type=Path, default=Path("artifacts"))
     parser.add_argument("--output", type=Path, default=Path("reports/generated"))
+    parser.add_argument("--readme", type=Path, default=Path("README.md"))
     args = parser.parse_args()
     (args.output / "figures").mkdir(parents=True, exist_ok=True)
     (args.output / "tables").mkdir(parents=True, exist_ok=True)
@@ -704,11 +967,12 @@ def main() -> None:
     generate_fi_economics(args.artifacts, args.output)
     generate_reliability(args.artifacts, args.output)
     mechanism_rows = generate_mechanisms(args.artifacts, args.output)
-    generate_paired_comparisons(args.artifacts, args.output)
+    paired_rows = generate_paired_comparisons(args.artifacts, args.output)
     generate_classification_metrics(args.artifacts, args.output)
     generate_compute(args.artifacts, args.output)
     generate_audits(args.artifacts, args.output)
     markdown_summary(fi_rows, transfer_rows, mechanism_rows, args.output)
+    update_readme_findings(args.readme, fi_rows, transfer_rows, paired_rows)
     print(json.dumps({"output": str(args.output), "figures": 8, "tables": 12}, indent=2))
 
 
