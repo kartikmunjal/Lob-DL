@@ -36,7 +36,7 @@ then generated report assets. No step edits Study 1 artifacts.
 | 1 | Q1 | Stock-day cluster inference: exact sign-flip randomization test and cluster bootstrap on paired differences, Holm family-wise adjustment | yes (reads existing predictions) | **done** (2026-11-03) |
 | 2 | Q3 | Return-unit evaluation: Spearman IC by cluster, out-of-sample R^2, signed mark-out curves in bps versus half-spread | yes | **done** (2026-11-03) |
 | 3 | Q4 | Market-invariant book representation (tick-distance prices, depth-share sizes) and a transfer re-run with it | yes | planned |
-| 4 | Q2 | Representation x model factorial: {raw book, engineered, both} x {LightGBM, DeepLOB, transformer}; protocol in `STUDY2_PROTOCOL.md` Part C | yes (GPU) | **in progress** (started 2026-11-03) |
+| 4 | Q2 | Representation x model factorial: {raw book, engineered, both} x {LightGBM, DeepLOB, transformer}; protocol in `STUDY2_PROTOCOL.md` Part C | yes (GPU) | **in progress** (protocol frozen 2026-11-03; B2 validation searches and neural final fits running on the GPU host since 2026-11-04) |
 | 5 | Q5 | Multi-week crypto L2 pipeline (public exchange depth snapshots + trades), walk-forward splits with many day clusters | new data | planned |
 | 6 | Q5 | Data-scaling curves (train days 1..N) for GBDT vs deep models; drift diagnostics (PSI, rolling IC) | new data | planned |
 | 7 | Q2/Q4 | Self-supervised pretraining (masked book-event modeling) with linear-probe and fine-tune transfer | new data, GPU | planned |
