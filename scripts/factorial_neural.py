@@ -24,7 +24,6 @@ from lobdl.factorial import (
     build_neural,
     family,
     study1_selection_file,
-    verify_lock,
 )
 from lobdl.metrics import classification_metrics
 from lobdl.models import count_parameters
@@ -63,9 +62,9 @@ def main() -> None:
         raise SystemExit("CUDA is required for Part C neural runs")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    # Neural cells have no Part C selection step, so only the Study 1 lock gates them
+    # (protocol Part C amendment 1). B2 final fits still require the Part C manifest.
     verify_study1_lock(args.study1)
-    if not args.smoke_epochs:
-        verify_lock(args.output)
     selection = json.loads(
         study1_selection_file(args.study1, args.model, args.horizon).read_text(encoding="utf-8")
     )
