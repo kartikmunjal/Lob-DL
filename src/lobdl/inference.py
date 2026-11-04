@@ -190,3 +190,35 @@ def paired_cluster_inference(
             ),
         }
     return output
+
+
+def cluster_metric_by_seed(
+    y_by_seed: list[np.ndarray],
+    probabilities_by_seed: list[np.ndarray],
+    clusters_by_seed: list[np.ndarray],
+    metric: str = "macro_f1",
+) -> tuple[np.ndarray, np.ndarray]:
+    """One system's metric per cluster, averaged over fitted seeds.
+
+    Returns ``(cluster_ids, values)`` sorted by cluster id. Every seed must cover the
+    same clusters, so interaction contrasts can be formed by subtracting vectors from
+    different systems cluster by cluster.
+    """
+    if not (len(y_by_seed) == len(probabilities_by_seed) == len(clusters_by_seed) > 0):
+        raise ValueError("per-seed inputs must be non-empty and equally long")
+    ids = None
+    per_seed = []
+    for y, probabilities, clusters in zip(
+        y_by_seed, probabilities_by_seed, clusters_by_seed, strict=True
+    ):
+        clusters = np.asarray(clusters).reshape(len(y), -1)
+        unique, index = np.unique(clusters, axis=0, return_inverse=True)
+        index = index.reshape(-1)
+        if ids is None:
+            ids = unique
+        elif not np.array_equal(ids, unique):
+            raise ValueError("seeds do not cover identical clusters")
+        sums = np.zeros((len(unique), 9 + 15 * 3))
+        np.add.at(sums, index, classification_row_statistics(y, probabilities))
+        per_seed.append(metrics_from_sufficient_sums(sums)[metric])
+    return ids, np.mean(per_seed, axis=0)

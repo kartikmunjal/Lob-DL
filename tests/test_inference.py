@@ -102,3 +102,25 @@ def test_identical_systems_give_zero_differences_and_unit_p():
     result = paired_cluster_inference(y, prob, prob, groups, bootstrap_replicates=500)
     assert np.allclose(result["macro_f1"]["cluster_differences"], 0.0)
     assert result["macro_f1"]["sign_flip"]["p_value"] == pytest.approx(1.0)
+
+
+def test_cluster_metric_by_seed_matches_paired_differences():
+    from lobdl.inference import cluster_metric_by_seed
+
+    rng = np.random.default_rng(5)
+    rows = 900
+    y = rng.integers(0, 3, rows)
+    a, b = rng.dirichlet(np.ones(3), rows), rng.dirichlet(np.ones(3), rows)
+    cluster = np.repeat([[8, 0], [8, 1], [9, 0]], rows // 3, axis=0)
+    ids, va = cluster_metric_by_seed([y, y], [a, a], [cluster, cluster])
+    _, vb = cluster_metric_by_seed([y, y], [b, b], [cluster, cluster])
+    groups = np.column_stack((cluster, np.ones(rows, dtype=int)))
+    _, diffs = cluster_metric_differences(y, a, b, groups)
+    assert ids.tolist() == [[8, 0], [8, 1], [9, 0]]
+    assert (va - vb) == pytest.approx(diffs)
+    with pytest.raises(ValueError):
+        cluster_metric_by_seed([y], [a], [cluster[:-3]])
+    other = cluster.copy()
+    other[0] = [7, 7]
+    with pytest.raises(ValueError, match="identical clusters"):
+        cluster_metric_by_seed([y, y], [a, a], [cluster, other])
