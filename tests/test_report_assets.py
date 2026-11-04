@@ -306,6 +306,7 @@ def test_all_public_assets_generate_from_named_reports(tmp_path):
     assert "test-window sampling uncertainty" in generated_readme
     assert "reports/generated/figures/fi_primary_macro_f1.png" in generated_readme
     assert "## Reproduce" in generated_readme
+    assert "see [Study 2, item 4]" in generated_readme
     update_readme_findings(readme, fi, transfer, paired)
     assert readme.read_text(encoding="utf-8") == generated_readme
     assert (output / "RESULTS.md").exists()

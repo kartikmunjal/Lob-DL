@@ -872,6 +872,12 @@ def update_readme_findings(
                 f"DeepLOB is {h10_m1:.3f}."
             ),
             "",
+            (
+                "Study 2 finds FI-2010 labels only loosely tied to public prices; see "
+                "[Study 2, item 4](#study-2-stress-testing-the-study-1-conclusions"
+                "-post-hoc-exploratory)."
+            ),
+            "",
             "**2. Zero-shot transfer to LOBSTER with fixed labels collapses to near chance.**",
             "",
             (
