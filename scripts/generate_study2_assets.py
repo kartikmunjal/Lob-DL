@@ -23,7 +23,7 @@ PALETTE = {"cluster": "#1f5fa8", "block": "#c8741b", "zero": "#7a7a7a"}
 KEY_PAIRS = (
     ("B2", "M1"),
     ("B2", "M2"),
-    ("B2", "B0:persistence"),
+    ("B0:persistence", "B2"),
     ("M1", "M2"),
 )
 
@@ -164,6 +164,18 @@ def markdown(significance: list[dict], return_rows: list[dict]) -> str:
         "![Cluster versus block intervals](figures/cluster_vs_block_ci.png)",
         "",
         "## A2: return-unit evaluation",
+        "",
+        "**Read FI-2010 rows with care.** The shipped FI-2010 labels agree with the",
+        "public decimal-precision price formula on only 64% (h10), 54% (h20), 37% (h50)",
+        "and 25% (h100) of rows (`reports/generated/tables/fi_label_formula_agreement.csv`).",
+        "At h10, 62% of rows labeled *up* have exactly zero realized public-price move, and",
+        "last-move persistence scores 0.80 macro-F1 on labels while its signal has IC −0.09",
+        "against realized public-price moves. The labels are therefore only weakly tied to",
+        "moves observable in the public book, so FI-2010 IC, R² and mark-outs measure",
+        "agreement with *public-price* moves, not with the labels the models were trained on.",
+        "LOBSTER labels and returns both come from the same vendor book and are internally",
+        "consistent, so LOBSTER rows are the cleaner return-unit evidence. LOBSTER has five",
+        "clusters (tickers); its cluster intervals are indicative only.",
         "",
         "| Dataset | System | Horizon | Mean cluster IC | OOS R² | Top-decile move (bps) | Half-spread (bps) | Taker edge (bps) |",
         "|---|---|---:|---:|---:|---:|---:|---:|",

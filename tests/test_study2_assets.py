@@ -37,7 +37,7 @@ def test_figures_and_markdown_render(tmp_path):
     cluster = [
         _cluster_row("FI2010", a, b, h, 0.01, 0.01, 0.02)
         for h in (10, 20, 50, 100)
-        for a, b in (("B2", "M1"), ("B2", "M2"), ("B2", "B0:persistence"), ("M1", "M2"))
+        for a, b in (("B2", "M1"), ("B2", "M2"), ("B0:persistence", "B2"), ("M1", "M2"))
     ]
     systems = ["B0 persistence", "B1 logistic", "B2 LightGBM", "M1 DeepLOB", "M2 transformer"]
     returns = [
@@ -50,3 +50,4 @@ def test_figures_and_markdown_render(tmp_path):
     assert (tmp_path / "b.png").stat().st_size > 5000
     text = markdown(significance_summary(cluster), returns)
     assert "post-hoc exploratory" in text and "Holm" in text
+    assert "Read FI-2010 rows with care" in text
