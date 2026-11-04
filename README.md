@@ -56,6 +56,18 @@ are cleaner (IC 0.21-0.24 for logistic and LightGBM at h50-h100, 0.09-0.12 for D
 
 ![Top-decile move vs half-spread](reports/study2/figures/markout_vs_half_spread.png)
 
+### In progress: representation x model factorial (Study 2, Part C)
+
+Study 1 gave LightGBM engineered features and the deep models the raw book, so "gradient boosting
+beats deep learning" confounds model class with input representation. Part C crosses
+{raw book, engineered features, both} with {LightGBM, DeepLOB, transformer} on FI-2010, with the
+hypotheses, contrasts and multiple-testing correction registered in
+[`docs/STUDY2_PROTOCOL.md`](docs/STUDY2_PROTOCOL.md) (Part C and amendment 1) before any model was fitted.
+Code, runners and analysis are in the repo and tested; the runs are executing now and **no Part C
+results exist yet**. Two design caveats are already fixed in the protocol: DeepLOB's convolutions need the
+raw book layout, so its engineered-only cell is a separately named LSTM head, and the neural cells reuse
+Study 1's raw-tuned hyperparameters, which can favor the raw representation.
+
 ### Known limitations
 
 - Ten days, five Nordic stocks, 2010: no regime, drift or data-scaling claims are supported.
