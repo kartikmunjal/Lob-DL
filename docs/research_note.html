@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Do deep models earn their complexity on limit-order-book data?</title>
+<style>
+@page { size: Letter; margin: 0.6in 0.7in; }
+body { font: 10pt/1.38 -apple-system, "Helvetica Neue", Arial, sans-serif; color: #1a1a1a; margin: 0; }
+h1 { font-size: 15pt; margin: 0 0 2px; }
+.sub { color: #555; font-size: 9pt; margin-bottom: 8px; }
+h2 { font-size: 10.5pt; margin: 10px 0 3px; border-bottom: 1px solid #ccc; padding-bottom: 1px; }
+p { margin: 3px 0 5px; }
+table { border-collapse: collapse; width: 100%; font-size: 8.8pt; margin: 4px 0 6px; }
+th, td { border-bottom: 1px solid #ddd; padding: 2px 5px; text-align: right; }
+th:first-child, td:first-child { text-align: left; }
+th { background: #f3f3f3; }
+img { width: 100%; margin: 4px 0; }
+.cap { font-size: 8.3pt; color: #555; margin-top: -2px; }
+ul { margin: 3px 0 5px 16px; padding: 0; }
+li { margin-bottom: 2px; }
+.note { background: #fff6e5; border-left: 3px solid #d98a00; padding: 4px 8px; margin: 6px 0; }
+</style></head><body>
+
+<h1>Do deep models earn their complexity on limit-order-book data?</h1>
+<div class="sub">Kartik Munjal &middot; Leakage-audited benchmark and a post-hoc stress test of its conclusions &middot; research note, no alpha or tradability claim</div>
+
+<h2>Question and setup</h2>
+<p>Deep sequence models (DeepLOB, a transformer) are widely reported to beat classical baselines on short-horizon mid-price classification. I test that under a preregistered, leakage-controlled protocol: FI-2010 (5 stocks, 10 days; train days 1&ndash;6, validate day 7, test days 8&ndash;10, 200-event purge, train-only normalization), horizons 10/20/50/100 events, and zero-shot transfer to five LOBSTER tickers. Each model family (logistic, LightGBM, DeepLOB, transformer) gets exactly 12 tuned configurations per horizon, 5 final seeds, and the same paired evaluation. Study 1 results were frozen before Study 2 was written, so everything below is <b>post-hoc exploratory</b>.</p>
+
+<h2>Study 1 result (preregistered)</h2>
+<table>
+<tr><th>Macro-F1, FI-2010 test</th><th>h10</th><th>h20</th><th>h50</th><th>h100</th></tr>
+<tr><td>Last-move persistence</td><td>0.798</td><td>0.689</td><td>0.473</td><td>0.366</td></tr>
+<tr><td>LightGBM (engineered features)</td><td>0.805</td><td>0.716</td><td>0.829</td><td>0.885</td></tr>
+<tr><td>DeepLOB (raw book)</td><td>0.709</td><td>0.620</td><td>0.765</td><td>0.789</td></tr>
+<tr><td>Transformer (raw book)</td><td>0.705</td><td>0.623</td><td>0.738</td><td>0.731</td></tr>
+</table>
+<p>A tuned gradient-boosted model beats both deep models at every horizon, and on LOBSTER with distribution-matched labels LightGBM again leads. At h10 persistence alone reaches 0.798, so the label is largely recoverable from the last move.</p>
+
+<h2>Stress test 1: is the inference honest?</h2>
+<p>The registered bootstrap resamples contiguous windows inside each stock-day, which treats ~10<sup>5</sup> overlapping windows as nearly independent. The test set has only 15 stock-day clusters. I recomputed all 164 registered FI-2010 comparisons with the cluster as the unit (exact sign-flip test over all 2<sup>15</sup> assignments, cluster bootstrap, Holm correction over the full family). Cluster intervals are a median 10.6&times; wider (10th&ndash;90th percentile 3.7&times;&ndash;21&times;).</p>
+<img src="../reports/study2/figures/cluster_vs_block_ci.png" alt="cluster vs block intervals">
+<div class="cap">Blue: 15 stock-day clusters. Orange: registered window bootstrap. Same point estimates, very different widths.</div>
+<ul>
+<li><b>142 of 164</b> FI-2010 comparisons remain significant after Holm correction; LightGBM beats DeepLOB at h10, h20, h100 in 15 of 15 stock-days.</li>
+<li><b>Exception:</b> at h50, LightGBM beats DeepLOB in 10 of 15 stock-days (Holm p = 0.26). The headline holds at three of four horizons, not four.</li>
+<li><b>LOBSTER:</b> five tickers make the smallest attainable p-value 0.0625, so no comparison can be significant by construction. LightGBM leads DeepLOB on 5 of 5 tickers at every horizon, which is consistent but not testable.</li>
+</ul>
+
+<h2>Stress test 2: do predictions matter in return units?</h2>
+<p>I turned each model's probabilities into a signal P(up)&minus;P(down) and evaluated against realized forward mid-price moves in basis points: Spearman IC per cluster, cross-fitted out-of-sample R<sup>2</sup>, and mean forward move by cross-fitted signal decile, compared with the half-spread a liquidity taker pays.</p>
+<img src="../reports/study2/figures/markout_vs_half_spread.png" alt="top decile move vs half spread">
+<div class="cap">Mean forward move in the top signal decile vs half-spread. Every model sits far below the cost line.</div>
+<ul>
+<li>Best top-decile move is 0.72 bps (FI-2010) and 0.24 bps (LOBSTER), against half-spreads of ~7.8 and ~2.4 bps. <b>All 40 system-horizon cells have negative taker edge.</b></li>
+<li>On LOBSTER, logistic and LightGBM reach IC 0.21&ndash;0.24 at h50&ndash;h100 versus 0.09&ndash;0.12 for DeepLOB: the same ranking as the classification metrics, now in return units.</li>
+</ul>
+<div class="note"><b>A data property that changes how FI-2010 should be read.</b> The shipped labels match the documented formula on public prices in only 64% (h10) to 25% (h100) of rows. Persistence scores 0.80 macro-F1 on the labels yet has IC &minus;0.09 (0 of 15 clusters positive) against realized public-price moves. FI-2010 classification scores and FI-2010 return-unit scores are therefore measuring different things; LOBSTER, where labels and returns share a source, is the cleaner return-unit evidence.</div>
+
+<h2>What I conclude, and what I do not</h2>
+<ul>
+<li>Under this protocol and data, model complexity did not buy accuracy or transfer, and the finding is robust to stricter inference at 3 of 4 horizons.</li>
+<li>I do <b>not</b> claim deep learning is inferior in general: LightGBM gets engineered order-flow features while the deep models get the raw book, so architecture and representation are confounded.</li>
+<li>I do <b>not</b> claim any tradable signal. Predicted moves are one to two orders of magnitude below the cost of crossing the spread.</li>
+</ul>
+
+<h2>Next steps (planned, not done)</h2>
+<ul>
+<li><b>Separate model from representation:</b> {raw book, engineered, both} &times; {LightGBM, DeepLOB, transformer} at matched trial budgets.</li>
+<li><b>Market-invariant inputs</b> (price distance in ticks, size as depth share) to test whether the fixed-label transfer collapse is a scaling artifact.</li>
+<li><b>Multi-week crypto L2 data</b> with preregistered walk-forward splits, giving many more day-level clusters, plus data-scaling and drift curves.</li>
+<li><b>Self-supervised pretraining</b> with throughput benchmarks, and an order-book replay simulator with queue position and latency.</li>
+</ul>
+<p class="cap">Code, protocol, amendments and every number: github.com/kartikmunjal/Lob-DL (docs/PREREGISTRATION.md, docs/STUDY2_PROTOCOL.md, reports/study2/).</p>
+</body></html>

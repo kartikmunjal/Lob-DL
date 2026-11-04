@@ -23,7 +23,7 @@ PALETTE = {"cluster": "#1f5fa8", "block": "#c8741b", "zero": "#7a7a7a"}
 KEY_PAIRS = (
     ("B2", "M1"),
     ("B2", "M2"),
-    ("B0:persistence", "B2"),
+    ("B1", "B2"),
     ("M1", "M2"),
 )
 
